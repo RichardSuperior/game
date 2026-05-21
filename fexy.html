@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>富而喜悦 - 品牌故事</title>
+    <style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'PingFang SC','Microsoft YaHei',-apple-system,sans-serif;min-height:100vh;background:linear-gradient(160deg,#0a0e1a 0%,#0d1528 25%,#101d3a 50%,#0a1628 75%,#060a14 100%);background-image:url('bg.jpg');background-size:cover;background-position:center top;background-repeat:no-repeat;background-attachment:fixed;color:#e8e8e8;padding:40px 20px 60px;position:relative;overflow-x:hidden}
+body.bg-fallback{background-image:none;background:linear-gradient(160deg,#0a0e1a,#0d1528,#101d3a,#0a1628,#060a14)}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 40% 15%,rgba(240,192,64,.3) 0%,transparent 100%),radial-gradient(1px 1px at 55% 70%,rgba(255,255,255,.35) 0%,transparent 100%),radial-gradient(1px 1px at 70% 30%,rgba(255,255,255,.25) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 85% 55%,rgba(240,192,64,.25) 0%,transparent 100%),radial-gradient(1px 1px at 15% 80%,rgba(255,255,255,.3) 0%,transparent 100%),radial-gradient(1px 1px at 50% 40%,rgba(255,255,255,.2) 0%,transparent 100%),radial-gradient(1px 1px at 90% 85%,rgba(255,255,255,.35) 0%,transparent 100%);background-color:rgba(8,12,24,.65);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(2px 2px at 30% 25%,rgba(240,192,64,.15) 0%,transparent 100%),radial-gradient(2.5px 2.5px at 50% 50%,rgba(255,255,255,.08) 0%,transparent 100%);animation:twinkle 6s ease-in-out infinite alternate;pointer-events:none;z-index:0}
+@keyframes twinkle{0%{opacity:.5}50%{opacity:1}100%{opacity:.6}}
+
+.container{max-width:820px;margin:0 auto;position:relative;z-index:1}
+
+/* 入场动画 */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.anim-fade-up{opacity:0;transform:translateY(30px);animation:fadeInUp .8s cubic-bezier(.16,1,.3,1) forwards}
+
+/* 标题 */
+@keyframes shimmerTitle{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.page-title{font-size:2.2rem;text-align:center;margin-bottom:10px;letter-spacing:4px;background:linear-gradient(135deg,#f0c040 0%,#ffd700 30%,#f5e6a3 50%,#ffd700 70%,#c8960c 100%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 12px rgba(240,192,64,.4));animation:shimmerTitle 4s ease-in-out infinite}
+.page-title::after{content:'';display:block;width:80px;height:2px;background:linear-gradient(90deg,transparent,#f0c040,transparent);margin:14px auto 0;animation:lineExpand 1.2s cubic-bezier(.16,1,.3,1) .4s forwards;transform:scaleX(0)}
+@keyframes lineExpand{to{transform:scaleX(1)}}
+.page-subtitle{text-align:center;color:rgba(255,255,255,.5);font-size:1rem;letter-spacing:3px;margin-bottom:8px}
+.page-tagline{text-align:center;color:rgba(255,255,255,.65);font-size:.95rem;margin-bottom:40px;line-height:1.8;letter-spacing:.5px}
+
+/* 卡片 */
+.card{background:rgba(255,255,255,.04);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(240,192,64,.2);border-radius:16px;padding:30px 32px;margin-bottom:24px;box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05);transition:all .4s cubic-bezier(.16,1,.3,1)}
+.card:hover{border-color:rgba(240,192,64,.35);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 20px rgba(240,192,64,.06)}
+
+.card-title{font-size:1.15rem;background:linear-gradient(135deg,#f0c040,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(240,192,64,.12);display:flex;align-items:center;gap:10px}
+.card-title::before{content:"";width:4px;height:18px;background:linear-gradient(180deg,#f0c040,#c8960c);border-radius:2px;flex-shrink:0}
+.card-text{color:rgba(255,255,255,.78);line-height:2;font-size:.95rem;letter-spacing:.3px}
+.card-text strong{color:#f0c040;font-weight:600}
+
+/* 信息网格 */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+.info-item{padding:16px 20px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(240,192,64,.1);transition:all .3s}
+.info-item:hover{border-color:rgba(240,192,64,.25);background:rgba(240,192,64,.04)}
+.info-item .info-icon{font-size:1.5rem;margin-bottom:8px}
+.info-item .info-title{font-size:.95rem;color:#f0c040;font-weight:600;margin-bottom:6px}
+.info-item .info-desc{font-size:.85rem;color:rgba(255,255,255,.6);line-height:1.7}
+
+/* 产品列表 */
+.product-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.product-item{padding:16px;background:rgba(255,255,255,.03);border-radius:10px;border-left:3px solid rgba(240,192,64,.3)}
+.product-item h4{font-size:.95rem;color:#f0c040;margin-bottom:6px}
+.product-item p{font-size:.85rem;color:rgba(255,255,255,.6);line-height:1.6}
+
+/* 创始人视频 */
+.video-wrap{position:relative;width:100%;border-radius:12px;overflow:hidden;border:1px solid rgba(240,192,64,.18);box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 15px rgba(240,192,64,.05);background:rgba(0,0,0,.3);margin-top:4px}
+.brand-video{display:block;width:100%;height:auto;border-radius:12px;outline:none}
+
+/* 荣誉标签 */
+.honor-tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.honor-tag{padding:8px 18px;background:rgba(240,192,64,.08);border:1px solid rgba(240,192,64,.2);border-radius:20px;color:#f0c040;font-size:.85rem;font-weight:500;letter-spacing:.5px}
+
+/* 返回按钮 */
+.back-section{text-align:center;margin-top:10px}
+.back-btn{display:inline-block;padding:14px 44px;background:linear-gradient(135deg,#c8960c,#f0c040,#ffd700);color:#0a0e1a;border-radius:30px;text-decoration:none;font-weight:600;letter-spacing:2px;box-shadow:0 4px 20px rgba(240,192,64,.3);transition:all .3s}
+.back-btn:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(240,192,64,.45)}
+
+/* 赞助链接 */
+.sponsor-link{text-align:center;margin-top:12px}
+.sponsor-link a{color:rgba(240,192,64,.5);text-decoration:none;font-size:.85rem;transition:color .3s}
+.sponsor-link a:hover{color:#f0c040}
+
+@media(max-width:600px){
+    body{padding:30px 15px}
+    .page-title{font-size:1.6rem;letter-spacing:2px}
+    .card{padding:22px 20px}
+    .info-grid,.product-list{grid-template-columns:1fr}
+    .honor-tags{justify-content:center}
+}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="page-title anim-fade-up" style="animation-delay:0.1s">富而喜悦</h1>
+    <p class="page-subtitle anim-fade-up" style="animation-delay:0.2s">WEALTH AND JOY</p>
+    <p class="page-tagline anim-fade-up" style="animation-delay:0.3s">一个专注于心智探索与益智游戏的文化品牌<br>通过游戏化方式帮助人们实现外在富足与内心喜悦<br>业务覆盖全球 40 多个国家和地区</p>
+
+    <!-- 创始人视频 -->
+    <div class="card anim-fade-up" id="videoCard" style="animation-delay:0.4s;display:none">
+        <h2 class="card-title">🎬 创始人带你了解富而喜悦</h2>
+        <div class="video-wrap">
+            <video id="brandVideo" class="brand-video" playsinline muted preload="metadata" controls>
+                <source src="fexy.mp4" type="video/mp4">
+            </video>
+        </div>
+    </div>
+
+    <!-- 品牌创立 -->
+    <div class="card anim-fade-up" style="animation-delay:0.45s">
+        <h2 class="card-title">🏢 品牌创立</h2>
+        <p class="card-text">
+            <strong>创立时间：</strong>2018 年<br>
+            <strong>创始人：</strong>唐乾九 × 唐苓馨 夫妇<br>
+            <strong>扎根地：</strong>横琴粤澳深度合作区<br>
+            <strong>运营主体：</strong>珠海平行时空文化科技有限公司<br>
+            <strong>品牌使命：</strong>启发人们活出富而喜悦的生命状态，开创教娱结合的新模式<br>
+            <strong>关联企业：</strong>海南富而喜悦文化传播有限公司等
+        </p>
+    </div>
+
+    <!-- 社会荣誉 -->
+    <div class="card anim-fade-up" style="animation-delay:0.55s">
+        <h2 class="card-title">🏆 社会荣誉</h2>
+        <div class="honor-tags">
+            <span class="honor-tag">🏅 2023年度综合影响力标杆教育集团</span>
+            <span class="honor-tag">🌟 她经济创新品牌十强</span>
+        </div>
+        <p class="card-text" style="margin-top:12px">
+            富而喜悦品牌以其独特的教娱理念和社会影响力，在教育与创新领域屡获殊荣，获得了行业与社会的广泛认可。
+        </p>
+    </div>
+
+    <!-- 核心产品 -->
+    <div class="card anim-fade-up" style="animation-delay:0.65s">
+        <h2 class="card-title">🎲 核心产品与课程</h2>
+        <div class="product-list">
+            <div class="product-item">
+                <h4>💰 财富流沙盘</h4>
+                <p>模拟20-60岁人生财商推演游戏</p>
+            </div>
+            <div class="product-item">
+                <h4>🌟 明日之星沙盘</h4>
+                <p>青少年成长与未来规划推演</p>
+            </div>
+            <div class="product-item">
+                <h4>⏳ 时空流沙盘</h4>
+                <p>多维度时空探索推演游戏</p>
+            </div>
+            <div class="product-item">
+                <h4>📚 财富流教练认证</h4>
+                <p>专业财富教练培训与认证体系</p>
+            </div>
+        </div>
+        <p class="card-text" style="margin-top:12px">
+            产品已被翻译成 <strong>11 种语言</strong>，同步开设<strong>富而喜悦妈妈研修班</strong>等课程，帮助全球用户提升财商与心智。
+        </p>
+    </div>
+
+    <!-- 品牌活动与书籍 -->
+    <div class="card anim-fade-up" style="animation-delay:0.75s">
+        <h2 class="card-title">📖 品牌活动与出版物</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-icon">💝</div>
+                <div class="info-title">富而喜悦爱久节</div>
+                <div class="info-desc">每年5月20日至29日举办，倡导学会爱自己，传递富而喜悦的生活理念</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">📕</div>
+                <div class="info-title">《富而喜悦》</div>
+                <div class="info-desc">2023年出版，副标题"创造顺流人生的13个锦囊"，被国家图书馆收藏</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 返回 -->
+    <div class="back-section anim-fade-up" style="animation-delay:0.85s">
+        <a href="index.html" class="back-btn">← 返回首页</a>
+    </div>
+    <div class="sponsor-link anim-fade-up" style="animation-delay:0.9s">
+        <a href="index.html">回到财富流沙盘游戏</a>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    // 背景回退
+    var img=new Image();img.onerror=function(){document.body.classList.add('bg-fallback')};img.src='bg.jpg';
+
+    // 视频检测
+    var v=document.getElementById('brandVideo');
+    var vc=document.getElementById('videoCard');
+    if(v&&vc){
+        if(!v.canPlayType||v.canPlayType('video/mp4')==='')return;
+        var t=setTimeout(function(){vc.style.display='none'},4000);
+        var show=function(){clearTimeout(t);vc.style.display='block'};
+        v.addEventListener('loadedmetadata',show,{once:true});
+        v.addEventListener('canplay',show,{once:true});
+        v.addEventListener('error',function(){clearTimeout(t);vc.style.display='none'},{once:true});
+        v.load();
+    }
+});
+</script>
+</body>
+</html>

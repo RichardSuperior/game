@@ -23,6 +23,17 @@
         </div>
         <h1 class="anim-fade-up" style="animation-delay:0.15s">富而喜悦 - 财富流沙盘<br><span class="title-sub">WEALTH AND JOY SIMULATION</span></h1>
         
+        <!-- 官方宣传片 -->
+        <div class="card video-card anim-fade-up" id="videoCard" style="animation-delay:0.35s;display:none">
+            <div class="card-glow"></div>
+            <h2 class="video-title">🎬 官方宣传片</h2>
+            <div class="video-wrap">
+                <video id="promoVideo" class="promo-video" playsinline muted preload="metadata" controls>
+                    <source src="index.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
         <div class="card anim-fade-up" style="animation-delay:0.4s">
             <div class="card-glow"></div>
             <p class="welcome-text">欢迎来到财富流沙盘！在这里，你将经历从20岁到60岁的人生财富旅程。通过投资决策、机遇把握与风险管理，在顺流与逆流中实现财务自由，掌控人生方向。</p>
@@ -45,6 +56,15 @@
                 <li><span class="rule-icon">¤</span>通过掷骰子前进、抽取机遇卡与逆流卡、投资与交易，在人生棋盘上积累财富</li>
                 <li><span class="rule-icon">¤</span>管理你的现金流、资产与负债，目标是实现财务自由</li>
             </ul>
+        </div>
+
+        <!-- 品牌介绍入口 -->
+        <div class="brand-footer anim-fade-up" style="animation-delay:1.1s">
+            <a href="fexy.html" class="brand-link">
+                <span class="brand-link-icon">🏢</span>
+                <span>了解富而喜悦品牌</span>
+                <span class="brand-link-arrow">→</span>
+            </a>
         </div>
     </div>
 
@@ -135,13 +155,41 @@
         // 检测背景图是否加载成功，失败则回退渐变
         const bgImg = new Image();
         bgImg.onload = function() {
-            // 背景图正常，加深遮罩保证文字可读
             document.body.style.backgroundImage = "url('bg.jpg')";
         };
         bgImg.onerror = function() {
             document.body.classList.add('bg-fallback');
         };
         bgImg.src = 'bg.jpg';
+
+        // 检测宣传片是否可播放，不支持则隐藏
+        const video = document.getElementById('promoVideo');
+        const videoCard = document.getElementById('videoCard');
+        if (video && videoCard) {
+            const canPlay = video.canPlayType && video.canPlayType('video/mp4') !== '';
+            if (!canPlay) return; // 浏览器不支持 mp4，不显示
+
+            const testTimeout = setTimeout(() => {
+                // 超时未触发事件，保守隐藏
+                videoCard.style.display = 'none';
+            }, 4000);
+
+            const showVideo = () => {
+                clearTimeout(testTimeout);
+                videoCard.style.display = 'block';
+            };
+
+            video.addEventListener('loadedmetadata', showVideo, { once: true });
+            video.addEventListener('canplay', showVideo, { once: true });
+
+            video.addEventListener('error', () => {
+                clearTimeout(testTimeout);
+                videoCard.style.display = 'none';
+            }, { once: true });
+
+            // 触发加载
+            video.load();
+        }
 
         // 首次交互后播放加载音效
         const playOnce = () => {

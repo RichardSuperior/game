@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财富流沙盘 Pro - 完整规则版</title>
+    <style>
+/* ===== 全局重置与星空背景 ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'PingFang SC','Microsoft YaHei',-apple-system,sans-serif;min-height:100vh;background:linear-gradient(160deg,#0a0e1a 0%,#0d1528 25%,#101d3a 50%,#0a1628 75%,#060a14 100%);background-image:url('bg.jpg');background-size:cover;background-position:center top;background-repeat:no-repeat;background-attachment:fixed;color:#e8e8e8;padding:20px;position:relative;overflow-x:hidden}
+body.bg-fallback{background-image:none;background:linear-gradient(160deg,#0a0e1a 0%,#0d1528 25%,#101d3a 50%,#0a1628 75%,#060a14 100%)}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(1px 1px at 10% 20%,rgba(255,255,255,.4) 0%,transparent 100%),radial-gradient(1.5px 1.5px at 40% 15%,rgba(240,192,64,.3) 0%,transparent 100%),radial-gradient(1px 1px at 70% 30%,rgba(255,255,255,.25) 0%,transparent 100%),radial-gradient(1px 1px at 90% 85%,rgba(255,255,255,.35) 0%,transparent 100%);background-color:rgba(8,12,24,.65);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:radial-gradient(2px 2px at 30% 25%,rgba(240,192,64,.15) 0%,transparent 100%),radial-gradient(2.5px 2.5px at 50% 50%,rgba(255,255,255,.08) 0%,transparent 100%);animation:twinkle 6s ease-in-out infinite alternate;pointer-events:none;z-index:0}
+@keyframes twinkle{0%{opacity:.5}50%{opacity:1}100%{opacity:.6}}
+
+.floating-stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.star-particle{position:absolute;border-radius:50%;background:rgba(255,255,255,.8);box-shadow:0 0 3px rgba(255,255,255,.4);animation:floatStar linear infinite}
+@keyframes floatStar{0%,100%{transform:translateY(0) translateX(0) scale(1);opacity:.4}25%{transform:translateY(-15px) translateX(8px) scale(1.3);opacity:.9}50%{transform:translateY(-5px) translateX(-5px) scale(.9);opacity:.3}75%{transform:translateY(-20px) translateX(3px) scale(1.1);opacity:.7}}
+.shooting-stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden}
+.shooting-star{position:absolute;width:120px;height:1.5px;background:linear-gradient(90deg,rgba(240,192,64,.8),rgba(255,255,255,.4),transparent);border-radius:100px;transform:rotate(-35deg);opacity:0;animation:shootStar 8s ease-in infinite}
+.shooting-star:nth-child(1){top:8%;left:70%;animation-delay:2s;animation-duration:7s}
+.shooting-star:nth-child(2){top:25%;left:85%;animation-delay:5s;animation-duration:9s;width:90px}
+.shooting-star:nth-child(3){top:15%;left:55%;animation-delay:9s;animation-duration:10s;width:150px}
+@keyframes shootStar{0%{opacity:0;transform:rotate(-35deg) translateX(0)}2%{opacity:1}8%{opacity:0;transform:rotate(-35deg) translateX(-500px)}100%{opacity:0}}
+
+@keyframes shimmerTitle{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes lineExpand{to{transform:scaleX(1)}}
+.container{max-width:1300px;margin:0 auto;position:relative;z-index:1}
+
+/* ===== 页面标题 ===== */
+.page-header{text-align:center;margin-bottom:25px}
+.page-title{font-size:1.8rem;letter-spacing:3px;background:linear-gradient(135deg,#f0c040 0%,#ffd700 30%,#f5e6a3 50%,#ffd700 70%,#c8960c 100%);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 12px rgba(240,192,64,.4));animation:shimmerTitle 4s ease-in-out infinite}
+.page-title::after{content:'';display:block;width:60px;height:2px;background:linear-gradient(90deg,transparent,#f0c040,transparent);margin:12px auto 0;animation:lineExpand 1.2s cubic-bezier(.16,1,.3,1) .5s forwards;transform:scaleX(0)}
+
+/* ===== 顶部状态栏 ===== */
+.top-bar{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start;margin-bottom:20px}
+.player-info{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;padding:18px 20px;background:rgba(255,255,255,.04);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(240,192,64,.2);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
+.info-item{display:flex;flex-direction:column;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:8px;border-left:3px solid rgba(240,192,64,.5)}
+.info-label{font-size:.78rem;color:rgba(255,255,255,.45);margin-bottom:3px;letter-spacing:.3px}
+.info-value{font-size:1.15rem;color:#fff;font-weight:600;letter-spacing:.3px}
+.info-value.income{color:#4ade80;text-shadow:0 0 6px rgba(74,222,128,.15)}
+.info-value.expense{color:#f87171;text-shadow:0 0 6px rgba(248,113,113,.15)}
+.info-value.highlight{color:#4ade80}
+.info-value.warning{color:#f87171}
+.info-item:has(.income){border-left-color:rgba(74,222,128,.5)}
+.info-item:has(.expense){border-left-color:rgba(248,113,113,.5)}
+
+/* ===== 层级状态 ===== */
+.layer-bar{display:flex;align-items:center;gap:12px;padding:14px 24px;background:rgba(255,255,255,.04);backdrop-filter:blur(20px);border:1px solid rgba(240,192,64,.2);border-radius:16px;margin-bottom:20px;justify-content:center;flex-wrap:wrap}
+.layer-badge{padding:8px 22px;border-radius:20px;font-weight:600;font-size:.95rem;letter-spacing:1px;transition:all .4s;opacity:.4;border:1px solid transparent}
+.layer-badge.active{opacity:1;transform:scale(1.05)}
+.layer-normal{background:rgba(96,165,250,.15);color:#93c5fd;border-color:rgba(96,165,250,.3)}
+.layer-normal.active{background:rgba(96,165,250,.25);border-color:rgba(96,165,250,.5);box-shadow:0 0 20px rgba(96,165,250,.2)}
+.layer-adversity{background:rgba(248,113,113,.15);color:#fca5a5;border-color:rgba(248,113,113,.3)}
+.layer-adversity.active{background:rgba(248,113,113,.25);border-color:rgba(248,113,113,.5);box-shadow:0 0 20px rgba(248,113,113,.2)}
+.layer-prosperity{background:rgba(240,192,64,.15);color:#fde68a;border-color:rgba(240,192,64,.3)}
+.layer-prosperity.active{background:rgba(240,192,64,.25);border-color:rgba(240,192,64,.5);box-shadow:0 0 20px rgba(240,192,64,.2)}
+.layer-arrow{color:rgba(255,255,255,.25);font-size:1.2rem}
+.victory-track{display:flex;gap:10px;align-items:center;margin-left:20px;padding-left:20px;border-left:1px solid rgba(240,192,64,.15)}
+.victory-item{padding:6px 14px;border-radius:12px;font-size:.8rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);transition:all .3s}
+.victory-item.achieved{background:rgba(240,192,64,.15);border-color:rgba(240,192,64,.4);color:#fde68a;box-shadow:0 0 10px rgba(240,192,64,.1)}
+
+/* ===== 主游戏区 ===== */
+.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:rgba(255,255,255,.04);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(240,192,64,.2);border-radius:16px;padding:22px;transition:all .4s cubic-bezier(.16,1,.3,1);box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
+.card:hover{border-color:rgba(240,192,64,.35);box-shadow:0 12px 40px rgba(0,0,0,.4),0 0 20px rgba(240,192,64,.06)}
+.card-title{font-size:1.1rem;background:linear-gradient(135deg,#f0c040,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(240,192,64,.12);display:flex;align-items:center;gap:8px}
+.card-title::before{content:"";width:3px;height:18px;background:linear-gradient(180deg,#f0c040,#c8960c);border-radius:2px;flex-shrink:0}
+
+/* ===== 掷骰子 ===== */
+.dice-display{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.dice-icon{width:56px;height:56px;background:linear-gradient(135deg,#c8960c,#f0c040,#ffd700);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#0a0e1a;font-weight:bold;box-shadow:0 4px 16px rgba(240,192,64,.3)}
+.dice-result{flex:1}
+.dice-result p{margin:4px 0;color:rgba(255,255,255,.5);font-size:.9rem}
+.dice-result span{color:#fff;font-weight:600}
+
+/* ===== 按钮 ===== */
+.btn{padding:10px 22px;border:none;border-radius:10px;cursor:pointer;font-size:.95rem;font-weight:500;transition:all .3s;letter-spacing:.5px}
+.btn-primary{background:linear-gradient(135deg,#c8960c,#f0c040,#ffd700);color:#0a0e1a;box-shadow:0 4px 16px rgba(240,192,64,.25);font-weight:600}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(240,192,64,.4),0 0 12px rgba(240,192,64,.12)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.btn-secondary{background:rgba(255,255,255,.06);color:#e8e8e8;border:1px solid rgba(240,192,64,.2)}
+.btn-secondary:hover{background:rgba(240,192,64,.08);border-color:rgba(240,192,64,.35);color:#f0c040}
+.btn-secondary:disabled{opacity:.4;cursor:not-allowed}
+.btn-danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:none;border-radius:10px;padding:10px 22px;cursor:pointer;font-weight:600}
+
+/* ===== 卡牌区域 ===== */
+.card-buttons{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.card-flip-container{perspective:1000px;width:100%;height:110px}
+.card-flip{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .8s ease}
+.card-flip-inner{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:10px}
+.card-front{background:rgba(240,192,64,.06);border:2px dashed rgba(240,192,64,.2)}
+.card-back{background:rgba(255,255,255,.04);border:1px solid rgba(240,192,64,.2);transform:rotateY(180deg)}
+.card-flip.flipping{transform:rotateY(180deg)}
+
+/* ===== 行动操作 ===== */
+.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.action-btn{padding:12px 8px;background:rgba(255,255,255,.04);border:1px solid rgba(240,192,64,.12);border-radius:10px;color:#e8e8e8;cursor:pointer;transition:all .3s;font-size:.88rem;text-align:center}
+.action-btn:hover{background:rgba(240,192,64,.08);border-color:rgba(240,192,64,.35);transform:translateY(-2px)}
+.action-btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* ===== 事件日志 ===== */
+.event-log{max-height:320px;overflow-y:auto;padding-right:8px}
+.event-log::-webkit-scrollbar{width:4px}
+.event-log::-webkit-scrollbar-thumb{background:rgba(240,192,64,.2);border-radius:2px}
+.log-entry{padding:8px 12px;margin-bottom:6px;border-radius:8px;font-size:.82rem;line-height:1.5;border-left:3px solid rgba(240,192,64,.3);background:rgba(255,255,255,.02);animation:logIn .3s ease}
+.log-entry.log-income{border-left-color:#4ade80}
+.log-entry.log-expense{border-left-color:#f87171}
+.log-entry.log-event{border-left-color:#60a5fa}
+.log-entry.log-layer{border-left-color:#f0c040}
+.log-entry.log-victory{border-left-color:#a78bfa;background:rgba(167,139,250,.06)}
+.log-time{color:rgba(255,255,255,.35);font-size:.72rem;margin-right:6px}
+@keyframes logIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+
+/* ===== 规则面板 ===== */
+.rules-panel{grid-column:1/-1}
+.rules-toggle{width:100%;padding:12px;background:rgba(240,192,64,.06);border:1px solid rgba(240,192,64,.15);border-radius:10px;color:#f0c040;cursor:pointer;font-size:.95rem;text-align:center;transition:all .3s;font-weight:500;letter-spacing:1px}
+.rules-toggle:hover{background:rgba(240,192,64,.1);border-color:rgba(240,192,64,.3)}
+.rules-content{display:none;margin-top:12px;padding:20px;background:rgba(255,255,255,.02);border-radius:12px;border:1px solid rgba(240,192,64,.1)}
+.rules-content.show{display:block;animation:logIn .3s ease}
+.rules-content h3{font-size:1rem;background:linear-gradient(135deg,#f0c040,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid rgba(240,192,64,.1)}
+.rules-content h3:first-child{margin-top:0}
+.rules-content p,.rules-content li{font-size:.85rem;color:rgba(255,255,255,.7);line-height:1.7}
+.rules-content ul{padding-left:18px}
+.rules-content li{margin-bottom:4px}
+.rules-content .tag-green{color:#4ade80;font-weight:600}
+.rules-content .tag-red{color:#f87171;font-weight:600}
+.rules-content .tag-gold{color:#f0c040;font-weight:600}
+
+/* ===== 导航 ===== */
+.nav-links{grid-column:1/-1;display:flex;justify-content:center;gap:14px;padding-top:8px;flex-wrap:wrap}
+.nav-link{padding:10px 24px;background:rgba(255,255,255,.04);border:1px solid rgba(240,192,64,.2);border-radius:25px;color:rgba(255,255,255,.6);text-decoration:none;transition:all .3s;font-size:.9rem;letter-spacing:.5px}
+.nav-link:hover{background:rgba(240,192,64,.08);color:#f0c040;border-color:rgba(240,192,64,.35)}
+.nav-link.primary{background:linear-gradient(135deg,#c8960c,#f0c040,#ffd700);color:#0a0e1a;border:none;font-weight:600;box-shadow:0 4px 16px rgba(240,192,64,.25)}
+
+/* ===== 模态框 ===== */
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);justify-content:center;align-items:center;z-index:1000}
+.modal.show{display:flex;animation:modalPopIn .35s cubic-bezier(.16,1,.3,1)}
+.modal-content{background:linear-gradient(160deg,#162040,#0f1a32 40%,#0d1528);border:1px solid rgba(240,192,64,.25);border-radius:20px;padding:28px 24px 24px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden}
+.modal-content::before{content:'';position:absolute;top:0;left:10%;right:10%;height:2px;background:linear-gradient(90deg,transparent,rgba(240,192,64,.5),transparent)}
+.modal-title{font-size:1.2rem;background:linear-gradient(135deg,#f0c040,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:14px;letter-spacing:2px;font-weight:600}
+.modal-message{color:rgba(255,255,255,.8);margin-bottom:20px;line-height:1.7;font-size:.92rem}
+.modal-input{margin-bottom:20px}
+.modal-input input{width:100%;padding:12px 16px;border:1px solid rgba(240,192,64,.2);border-radius:12px;background:rgba(255,255,255,.04);color:#fff;font-size:1rem;text-align:center;letter-spacing:1px;transition:all .3s}
+.modal-input input:focus{outline:none;border-color:rgba(240,192,64,.5);box-shadow:0 0 12px rgba(240,192,64,.1)}
+.modal-input input::placeholder{color:rgba(255,255,255,.3)}
+.modal-buttons{display:flex;gap:12px;justify-content:center}
+.modal-buttons .btn-primary{padding:10px 30px}
+.modal-buttons .btn-secondary{padding:10px 30px;font-size:.95rem;color:rgba(255,255,255,.7);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;cursor:pointer}
+.modal-buttons .btn-secondary:hover{background:rgba(255,255,255,.1);color:#fff}
+.asset-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.asset-btn{padding:10px;background:rgba(255,255,255,.04);border:1px solid rgba(240,192,64,.12);border-radius:10px;color:#e8e8e8;cursor:pointer;transition:all .3s;font-size:.85rem}
+.asset-btn:hover{background:rgba(240,192,64,.1);border-color:rgba(240,192,64,.35)}
+
+/* ===== Toast ===== */
+.toast{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(10,14,26,.92);backdrop-filter:blur(16px);color:rgba(255,255,255,.95);padding:16px 32px;border-radius:14px;font-size:.95rem;z-index:1001;transition:opacity .3s;border:1px solid rgba(240,192,64,.2);box-shadow:0 12px 40px rgba(0,0,0,.4);max-width:85%;line-height:1.6;text-align:center}
+.toast.show{display:block;animation:toastSlideIn .35s cubic-bezier(.16,1,.3,1)}
+@keyframes toastSlideIn{0%{transform:translate(-50%,-50%) scale(.85);opacity:0}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+@keyframes modalPopIn{0%{transform:scale(.85) translateY(10px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
+
+/* ===== 动画 ===== */
+@keyframes diceRoll{0%{transform:rotateX(0) rotateY(0)}25%{transform:rotateX(180deg) rotateY(90deg)}50%{transform:rotateX(360deg) rotateY(180deg)}75%{transform:rotateX(540deg) rotateY(270deg)}100%{transform:rotateX(720deg) rotateY(360deg)}}
+.dice-rolling{animation:diceRoll .6s ease-out}
+@keyframes diceBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.dice-bounce{animation:diceBounce .3s ease-out}
+.dice-glow{box-shadow:0 0 30px rgba(240,192,64,.8),0 0 60px rgba(240,192,64,.4)!important}
+@keyframes valueChange{0%{transform:scale(1)}50%{transform:scale(1.2);color:#4ade80}100%{transform:scale(1)}}
+.value-up{animation:valueChange .5s ease-out}
+
+/* ===== 全屏结局 ===== */
+.game-over-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(6,10,20,.95);backdrop-filter:blur(20px);z-index:2000;justify-content:center;align-items:center;flex-direction:column;text-align:center;padding:40px}
+.game-over-overlay.show{display:flex;animation:modalPopIn .6s cubic-bezier(.16,1,.3,1)}
+.game-over-title{font-size:2.5rem;background:linear-gradient(135deg,#f0c040,#ffd700,#f5e6a3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:20px;letter-spacing:4px}
+.game-over-subtitle{font-size:1.2rem;color:rgba(255,255,255,.7);margin-bottom:30px;line-height:1.8}
+.game-over-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:400px;margin:0 auto 30px}
+.game-over-stat{padding:12px;background:rgba(255,255,255,.04);border:1px solid rgba(240,192,64,.15);border-radius:10px}
+.game-over-stat-label{font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:4px}
+.game-over-stat-value{font-size:1.1rem;font-weight:600;color:#fde68a}
+
+/* ===== 自定义滚动条 ===== */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}
+::-webkit-scrollbar-thumb{background:rgba(240,192,64,.2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(240,192,64,.35)}
+
+/* ===== 响应式 ===== */
+@media(max-width:900px){.game-grid{grid-template-columns:1fr}.player-info{grid-template-columns:repeat(3,1fr)}.action-grid{grid-template-columns:repeat(2,1fr)}.victory-track{margin-left:0;padding-left:0;border-left:none;border-top:1px solid rgba(240,192,64,.15);padding-top:10px;margin-top:6px;width:100%}.layer-bar{flex-direction:column}}
+@media(max-width:600px){.page-title{font-size:1.3rem}.player-info{grid-template-columns:1fr 1fr}.info-value{font-size:1rem}.action-grid{grid-template-columns:1fr 1fr}.nav-links{flex-direction:column;align-items:center}}
+    </style>
+</head>
+<body>
+<div class="floating-stars" id="floatingStars"></div>
+<div class="shooting-stars"><div class="shooting-star"></div><div class="shooting-star"></div><div class="shooting-star"></div></div>
+
+<div class="container">
+    <header class="page-header">
+        <h1 class="page-title">财富流沙盘 Pro · 完整规则版</h1>
+    </header>
+
+    <!-- 层级状态 + 胜利追踪 -->
+    <div class="layer-bar">
+        <div class="layer-badge layer-normal active" id="layerNormal">🌊 平流层</div>
+        <span class="layer-arrow">→</span>
+        <div class="layer-badge layer-adversity" id="layerAdversity">🌪️ 逆流层</div>
+        <span class="layer-arrow">→</span>
+        <div class="layer-badge layer-prosperity" id="layerProsperity">☀️ 顺流层</div>
+        <div class="victory-track">
+            <div class="victory-item" id="vDreamer" title="顺流层+无贷款+实现梦想">🏆 梦想家</div>
+            <div class="victory-item" id="vPhilanthropist" title="慈善累计>1000万">❤️ 慈善家</div>
+            <div class="victory-item" id="vTycoon" title="资产>1亿+无贷款">💎 创富家</div>
+        </div>
+    </div>
+
+    <!-- 玩家信息 -->
+    <div class="card player-info" id="playerInfo">
+        <div class="info-item"><span class="info-label">职业</span><span class="info-value" id="jobName">-</span></div>
+        <div class="info-item"><span class="info-label">年龄</span><span class="info-value" id="age">20岁</span></div>
+        <div class="info-item"><span class="info-label">回合</span><span class="info-value" id="round">1</span></div>
+        <div class="info-item"><span class="info-label">精力</span><span class="info-value highlight" id="energy">100</span></div>
+        <div class="info-item"><span class="info-label">月工资</span><span class="info-value income" id="salary">¥0</span></div>
+        <div class="info-item"><span class="info-label">月被动收入</span><span class="info-value income" id="passiveIncome">¥0</span></div>
+        <div class="info-item"><span class="info-label">月总支出</span><span class="info-value expense" id="totalExpense">¥0</span></div>
+        <div class="info-item"><span class="info-label">月现金流</span><span class="info-value highlight" id="cashflow">¥0</span></div>
+        <div class="info-item"><span class="info-label">现金</span><span class="info-value" id="cash">¥0</span></div>
+        <div class="info-item"><span class="info-label">总资产</span><span class="info-value" id="totalAsset">¥0</span></div>
+        <div class="info-item"><span class="info-label">总负债</span><span class="info-value expense" id="totalLiability">¥0</span></div>
+        <div class="info-item"><span class="info-label">慈善累计</span><span class="info-value" id="charity">¥0</span></div>
+        <div class="info-item"><span class="info-label">婚姻</span><span class="info-value" id="marriage">未婚</span></div>
+        <div class="info-item"><span class="info-label">子女</span><span class="info-value" id="children">0</span></div>
+        <div class="info-item"><span class="info-label">位置</span><span class="info-value" id="position">起点</span></div>
+    </div>
+
+    <div class="game-grid">
+        <!-- 掷骰子 -->
+        <div class="card">
+            <h2 class="card-title">掷骰子</h2>
+            <div class="dice-display">
+                <div class="dice-icon" id="diceIcon">?</div>
+                <div class="dice-result">
+                    <p>点数: <span id="diceResult">-</span></p>
+                    <p>事件: <span id="diceEvent">-</span></p>
+                </div>
+            </div>
+            <button class="btn btn-primary" id="rollDiceBtn" onclick="doRollDice()" style="width:100%">🎲 掷骰子（精力-10）</button>
+        </div>
+
+        <!-- 命运抽卡 -->
+        <div class="card">
+            <h2 class="card-title">命运抽卡</h2>
+            <div class="card-buttons">
+                <button class="btn btn-secondary" id="oppBtn" onclick="doDrawCard('opportunity')">🍀 机遇卡（-5精力）</button>
+                <button class="btn btn-secondary" id="advBtn" onclick="doDrawCard('adversity')">⚡ 逆流卡（-5精力）</button>
+            </div>
+            <div class="card-flip-container" id="cardFlipContainer">
+                <div class="card-flip" id="cardFlip">
+                    <div class="card-flip-inner card-front">
+                        <p style="color:rgba(255,255,255,.4)">点击按钮抽卡</p>
+                    </div>
+                    <div class="card-flip-inner card-back" id="cardBack">
+                        <p class="card-name" id="flipCardName">-</p>
+                        <p class="card-desc" id="flipCardDesc">-</p>
+                        <p class="card-desc" id="flipCardResult" style="margin-top:8px">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 行动操作 -->
+        <div class="card" style="grid-column:1/-1">
+            <h2 class="card-title">行动操作</h2>
+            <div class="action-grid">
+                <button class="action-btn" onclick="doSettlement()">💰 月度结算</button>
+                <button class="action-btn" onclick="doRest()">😴 休息（+30精力）</button>
+                <button class="action-btn" onclick="doCharity()">❤️ 慈善捐赠</button>
+                <button class="action-btn" onclick="showInvestModal()">📈 投资项目</button>
+                <button class="action-btn" onclick="showLoanModal()">🏦 银行贷款</button>
+                <button class="action-btn" onclick="showRepayModal()">💳 还贷款</button>
+                <button class="action-btn" onclick="showBuyAssetModal()">🏠 购买资产</button>
+                <button class="action-btn" onclick="showSellAssetModal()">📤 出售资产</button>
+                <button class="action-btn" onclick="doBuyInsurance()">🛡️ 购买保险</button>
+            </div>
+        </div>
+
+        <!-- 事件日志 -->
+        <div class="card">
+            <h2 class="card-title">📜 事件日志</h2>
+            <div class="event-log" id="eventLog">
+                <div class="log-entry log-event"><span class="log-time">[开始]</span>欢迎来到财富流沙盘 Pro！选择职业后开始人生旅程。</div>
+            </div>
+        </div>
+
+        <!-- 规则面板 -->
+        <div class="card">
+            <h2 class="card-title">📖 游戏规则</h2>
+            <button class="rules-toggle" onclick="toggleRules()">展开完整规则 ▼</button>
+            <div class="rules-content" id="rulesContent">
+                <h3>🎯 胜利条件（满足其一）</h3>
+                <ul>
+                    <li><span class="tag-gold">🏆 梦想家</span>：进入顺流层 + 无银行贷款 + 实现梦想里程碑</li>
+                    <li><span class="tag-gold">❤️ 慈善家</span>：慈善捐赠累计超过 <span class="tag-gold">¥1,000万</span></li>
+                    <li><span class="tag-gold">💎 创富家</span>：总资产超过 <span class="tag-gold">¥1亿</span> 且无银行贷款</li>
+                    <li>60岁时未达成以上条件则 <span class="tag-red">正常退休</span></li>
+                </ul>
+                <h3>🌊 三层层级系统</h3>
+                <ul>
+                    <li><span class="tag-gold">平流层</span>：初始状态，正常游戏</li>
+                    <li><span class="tag-red">逆流层</span>：触发条件 — 失业、重大亏损、精力耗尽事件。逆流层中支出 <span class="tag-red">+30%</span>，机遇卡概率降低</li>
+                    <li><span class="tag-gold">顺流层</span>：触发条件 — 月被动收入 ≥ 月总支出。顺流层中投资收益率 <span class="tag-green">+50%</span>，可解锁梦想</li>
+                </ul>
+                <h3>⚡ 层级切换规则</h3>
+                <ul>
+                    <li>平流→顺流：月被动收入 ≥ 月总支出时自动切换</li>
+                    <li>平流→逆流：失业/重大逆流事件触发切换</li>
+                    <li>逆流→平流：连续3回合未再受逆流打击，或主动偿还所有新增负债</li>
+                    <li>顺流→平流：被动收入降至总支出以下时回落</li>
+                    <li>顺流层不会直接跌入逆流层</li>
+                </ul>
+                <h3>⚡ 精力管理</h3>
+                <ul>
+                    <li>初始精力 100，上限 100</li>
+                    <li>掷骰子消耗 <span class="tag-red">10精力</span>，抽卡消耗 <span class="tag-red">5精力</span></li>
+                    <li>休息回复 <span class="tag-green">30精力</span>（跳过本回合收入）</li>
+                    <li>精力 ≤ 0 时只能休息，无法掷骰或抽卡</li>
+                    <li>精力 <span class="tag-red">≤ -2</span>（卡牌效果扣至负数）直接出局！</li>
+                </ul>
+                <h3>💰 被动收入判定标准</h3>
+                <ul>
+                    <li>房产：月收益率 0.5%（购买后自动计入被动收入）</li>
+                    <li>股票基金：月收益率 0.3%~0.8%（每回合随机浮动）</li>
+                    <li>企业：月收益率 0.8%（需精力维持，逆流层收益减半）</li>
+                    <li>副业：固定月收入（失业时副业收入保留）</li>
+                </ul>
+                <h3>📋 结算规则</h3>
+                <ul>
+                    <li>经过结算格自动领取月现金流，<span class="tag-red">错过不可补领</span></li>
+                    <li>月度结算 = 工资收入 + 被动收入 - 固定支出 - 贷款月供</li>
+                    <li>贷款月供 = 贷款总额 × 5%/月</li>
+                    <li>每12回合年龄+1岁，每5岁（25/30/35...60）敲钟提醒</li>
+                </ul>
+                <h3>🛡️ 保险机制</h3>
+                <ul>
+                    <li>花费 ¥3,000 购买保险，持续10回合</li>
+                    <li>保险期间：逆流卡伤害减半（金额/精力）</li>
+                    <li>保险到期自动失效，需重新购买</li>
+                </ul>
+                <h3>👥 人生事件</h3>
+                <ul>
+                    <li>结婚：固定支出 +¥2,000/月</li>
+                    <li>生子：固定支出 +¥1,500/月/孩</li>
+                    <li>失业：工资归零，持续3回合</li>
+                    <li>加薪：工资 +10%~30%</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 导航 -->
+        <div class="nav-links">
+            <a href="asset.html" class="nav-link">📊 资产负债表</a>
+            <a href="result.html" class="nav-link">🏁 人生结局</a>
+            <a href="#" class="nav-link primary" onclick="confirmRestart()">🔄 重新开始</a>
+        </div>
+    </div>
+</div>
+
+<!-- 模态框 -->
+<div class="modal" id="modal"><div class="modal-content"><h3 class="modal-title" id="modalTitle">提示</h3><p class="modal-message" id="modalMessage"></p><div class="modal-input" id="modalInput" style="display:none"><input type="number" id="modalInputValue" placeholder="请输入金额"></div><div class="modal-buttons"><button class="btn-primary" id="modalConfirm">确定</button><button class="btn-secondary" onclick="closeModal()">取消</button></div></div></div>
+<div class="modal" id="confirmModal"><div class="modal-content"><h3 class="modal-title" id="confirmTitle">确认</h3><p class="modal-message" id="confirmMessage"></p><div class="modal-buttons"><button class="btn-danger" id="confirmOk">确定</button><button class="btn-secondary" id="confirmCancel">取消</button></div></div></div>
+<div class="modal" id="alertModal"><div class="modal-content"><h3 class="modal-title">提示</h3><p class="modal-message" id="alertMessage"></p><div class="modal-buttons"><button class="btn-primary" onclick="closeAlertModal()">知道了</button></div></div></div>
+<div class="toast" id="toast"><p id="toastMessage"></p></div>
+
+<!-- 游戏结局遮罩 -->
+<div class="game-over-overlay" id="gameOverOverlay">
+    <div class="game-over-title" id="gameOverTitle">游戏结束</div>
+    <div class="game-over-subtitle" id="gameOverSubtitle"></div>
+    <div class="game-over-stats" id="gameOverStats"></div>
+    <button class="btn btn-primary" onclick="location.href='index.html'" style="font-size:1.1rem;padding:14px 40px">返回首页</button>
+</div>
+
+<script src="game.js"></script>
+<script>
+// ==================== Pro 版核心数据扩展 ====================
+const PRO_KEY = 'wealthFlowProData';
+
+// 24格棋盘内容
+const TILES = [
+    {icon:'🚀',label:'起点',desc:'人生起航，每经过获¥2,000'},
+    {icon:'💼',label:'打工',desc:'努力工作积累本金'},
+    {icon:'💰',label:'加薪',desc:'收入稳步增长'},
+    {icon:'🍀',label:'机遇',desc:'抽取机遇卡'},
+    {icon:'📈',label:'理财',desc:'学习投资理财'},
+    {icon:'🏠',label:'看房',desc:'房产投资机会'},
+    {icon:'⚡',label:'逆流',desc:'逆流来袭，小心应对'},
+    {icon:'🛒',label:'消费',desc:'生活开支，注意节流'},
+    {icon:'🎯',label:'目标',desc:'设定财务自由目标'},
+    {icon:'💳',label:'信用',desc:'建立良好信用'},
+    {icon:'📊',label:'结算',desc:'月度收支结算'},
+    {icon:'💼',label:'副业',desc:'发展副业增加收入'},
+    {icon:'💰',label:'奖金',desc:'年终奖发放'},
+    {icon:'🍀',label:'机遇',desc:'人脉拓展新机会'},
+    {icon:'🏦',label:'贷款',desc:'合理利用杠杆'},
+    {icon:'⚡',label:'逆流',desc:'风险来袭，谨慎行事'},
+    {icon:'🏠',label:'还贷',desc:'按时还款维护信用'},
+    {icon:'📈',label:'定投',desc:'坚持基金定投'},
+    {icon:'📊',label:'结算',desc:'季度财务复盘'},
+    {icon:'🎓',label:'进修',desc:'投资自己提升能力'},
+    {icon:'🤝',label:'合伙',desc:'寻找商业伙伴'},
+    {icon:'🍀',label:'机遇',desc:'风口来临抓机会'},
+    {icon:'🛡️',label:'保险',desc:'配置保险抵御风险'},
+    {icon:'🎁',label:'福利',desc:'享受生活小确幸'}
+];
+const BOARD_TYPES = ['start','normal','normal','opportunity','normal','normal','adversity','normal','normal','normal','settlement','normal','normal','opportunity','normal','adversity','normal','normal','settlement','normal','normal','opportunity','normal','normal'];
+
+// Pro版机遇卡
+const PRO_OPP_CARDS = [
+    {title:'项目奖金',desc:'完成项目获额外奖金',effect:d=>{addCash(8000);return'获得¥8,000'}},
+    {title:'房产增值',desc:'持有房产升值',effect:d=>{addPassiveIncome(500);return'被动收入+¥500/月'}},
+    {title:'股票分红',desc:'股票分红到账',effect:d=>{addCash(3000);return'获得¥3,000分红'}},
+    {title:'副业成功',desc:'副业稳定收入',effect:d=>{addPassiveIncome(1200);addAsset('sideJob',240000);return'被动收入+¥1,200/月'}},
+    {title:'知识产权',desc:'出售一项专利',effect:d=>{addCash(20000);return'获得¥20,000'}},
+    {title:'加薪升职',desc:'升职加薪啦',effect:d=>{d.salary=Math.round(d.salary*1.2);saveData(d);return'工资+20% → ¥'+d.salary.toLocaleString()+'/月'}},
+    {title:'租金收入',desc:'出租房产获租金',effect:d=>{addPassiveIncome(1500);return'被动收入+¥1,500/月'}},
+    {title:'投资收益',desc:'投资收益到账',effect:d=>{addCash(5000);addAsset('stocks',5000);return'获¥5,000+股票+¥5,000'}},
+    {title:'朋友还款',desc:'朋友还钱了',effect:d=>{addCash(5000);return'获得¥5,000'}},
+    {title:'年终奖',desc:'年终奖发放',effect:d=>{addCash(15000);return'获得¥15,000'}},
+    {title:'结婚喜事',desc:'步入婚姻殿堂',effect:d=>{if(d.married)return'已结婚，此卡无效';d.married=true;d.fixedExpense+=2000;saveData(d);return'结婚！固定支出+¥2,000/月'}},
+    {title:'喜得贵子',desc:'家庭添新成员',effect:d=>{if(d.children>=3)return'子女已满3人';d.children++;d.fixedExpense+=1500;saveData(d);return'生子！固定支出+¥1,500/月，子女'+d.children+'人'}},
+    {title:'商业合作',desc:'找到商业伙伴',effect:d=>{addPassiveIncome(2000);addAsset('business',400000);return'被动收入+¥2,000/月'}},
+];
+
+// Pro版逆流卡
+const PRO_ADV_CARDS = [
+    {title:'意外支出',desc:'突发意外需花钱',effect:d=>{let a=3000;if(d.insurance>0)a=Math.ceil(a/2);deductCash(a);return'支出¥'+a.toLocaleString()+(d.insurance>0?' (保险减半)':'')}},
+    {title:'精力透支',desc:'过度劳累消耗精力',effect:d=>{let a=30;if(d.insurance>0)a=Math.ceil(a/2);deductEnergy(a);return'精力-'+a+(d.insurance>0?' (保险减半)':'')}},
+    {title:'失业裁员',desc:'公司裁员暂时失业',effect:d=>{if(d.layer==='adversity')return'已在逆流层，失业卡无效';d.isUnemployed=true;d.unemployedRounds=3;d.layer='adversity';d.adversityRounds=0;saveData(d);return'失业3回合！进入逆流层！'}},
+    {title:'医疗支出',desc:'生病需要治疗',effect:d=>{let c=2000,e=20;if(d.insurance>0){c=Math.ceil(c/2);e=Math.ceil(e/2)}deductCash(c);deductEnergy(e);return'支出¥'+c+'，精力-'+e+(d.insurance>0?' (保险)':'')}},
+    {title:'投资失败',desc:'投资亏损严重',effect:d=>{addLiability(5000);return'增加负债¥5,000'}},
+    {title:'汽车维修',desc:'车辆需要维修',effect:d=>{let a=4000;if(d.insurance>0)a=Math.ceil(a/2);deductCash(a);return'支出¥'+a.toLocaleString()+(d.insurance>0?' (保险减半)':'')}},
+    {title:'信用卡逾期',desc:'信用卡还款逾期',effect:d=>{addLiability(2000);return'增加负债¥2,000'}},
+    {title:'人情支出',desc:'随份子钱',effect:d=>{deductCash(1500);return'支出¥1,500'}},
+    {title:'遭遇诈骗',desc:'遇到诈骗损失',effect:d=>{let a=6000;if(d.insurance>0)a=Math.ceil(a/2);deductCash(a);return'损失¥'+a.toLocaleString()+(d.insurance>0?' (保险减半)':'')}},
+    {title:'离婚',desc:'婚姻破裂',effect:d=>{if(!d.married)return'未婚，此卡无效';d.married=false;d.fixedExpense=Math.max(0,d.fixedExpense-1000);deductCash(10000);saveData(d);return'离婚！支出¥10,000，固定支出-¥1,000/月'}},
+];
+
+// ==================== 数据管理 ====================
+function getData(){
+    const d=localStorage.getItem(PRO_KEY);
+    return d?JSON.parse(d):null;
+}
+function saveData(d){localStorage.setItem(PRO_KEY,JSON.stringify(d))}
+function initData(jobKey){
+    const job=JOBS[jobKey];
+    const d={
+        job:jobKey,jobName:job.name,age:20,year:new Date().getFullYear(),
+        energy:100,maxEnergy:100,salary:job.salary,fixedExpense:job.expense,
+        passiveIncome:0,cash:job.initialCash,totalAsset:job.initialAsset,
+        totalLiability:0,loan:0,position:0,round:1,
+        layer:'normal',adversityRounds:0,
+        isUnemployed:false,unemployedRounds:0,
+        married:false,children:0,charity:0,
+        insurance:0,dreamAchieved:false,
+        stocksYield:0.005,
+        maxPassiveIncome:0,
+        assets:{cash:job.initialCash,property:0,stocks:0,business:0,sideJob:0},
+        log:[]
+    };
+    saveData(d);return d;
+}
+
+// ==================== 数值操作 ====================
+function addCash(a){const d=getData();if(!d)return;d.cash+=a;d.assets.cash=d.cash;recalcAsset(d);saveData(d)}
+function deductCash(a){const d=getData();if(!d)return;const r=Math.min(d.cash,a);d.cash-=r;if(a>r){d.totalLiability+=(a-r);d.loan+=(a-r)}d.assets.cash=d.cash;recalcAsset(d);saveData(d)}
+function addPassiveIncome(a){const d=getData();if(!d)return;d.passiveIncome+=a;d.maxPassiveIncome=Math.max(d.maxPassiveIncome,d.passiveIncome);saveData(d)}
+function deductPassiveIncome(a){const d=getData();if(!d)return;d.passiveIncome=Math.max(0,d.passiveIncome-a);saveData(d)}
+function addEnergy(a){const d=getData();if(!d)return;d.energy=Math.min(d.maxEnergy,d.energy+a);saveData(d)}
+function deductEnergy(a){const d=getData();if(!d)return;d.energy-=a;saveData(d);if(d.energy<=-2){addLog('精力耗尽（≤-2），游戏出局！','expense');endGame('精力耗尽','你的精力透支到-2以下，人生被迫中止。')}}
+function addLiability(a){const d=getData();if(!d)return;d.totalLiability+=a;d.loan+=a;saveData(d)}
+function addAsset(t,a){const d=getData();if(!d||!d.assets.hasOwnProperty(t))return;d.assets[t]+=a;recalcAsset(d);saveData(d)}
+function sellAsset(t,a){const d=getData();if(!d||d.assets[t]<a)return false;d.assets[t]-=a;d.cash+=a;d.assets.cash=d.cash;recalcAsset(d);saveData(d);return true}
+function recalcAsset(d){d.totalAsset=d.assets.cash+d.assets.property+d.assets.stocks+d.assets.business+d.assets.sideJob}
+function getMonthlyCashflow(){const d=getData();if(!d)return 0;const sal=d.isUnemployed?0:d.salary;return sal+d.passiveIncome-d.fixedExpense-Math.floor(d.loan*0.05)}
+function getTotalExpense(d){return d.fixedExpense+Math.floor(d.loan*0.05)}
+
+// ==================== 日志 ====================
+function addLog(msg,type='event'){
+    const d=getData();if(!d)return;
+    d.log=d.log||[];
+    const prefix={income:'💰',expense:'💸',event:'📋',layer:'🌊',victory:'🏆'}[type]||'📋';
+    d.log.unshift({msg:prefix+' '+msg,type,time:d.age+'岁/R'+d.round});
+    if(d.log.length>50)d.log.length=50;
+    saveData(d);
+    renderLog();
+}
+function renderLog(){
+    const d=getData();if(!d)return;
+    const el=document.getElementById('eventLog');
+    const cls={income:'log-income',expense:'log-expense',event:'log-event',layer:'log-layer',victory:'log-victory'};
+    el.innerHTML=(d.log||[]).map(l=>`<div class="log-entry ${cls[l.type]||'log-event'}"><span class="log-time">[${l.time}]</span>${l.msg}</div>`).join('');
+}
+
+// ==================== 层级检查 ====================
+function checkLayer(){
+    const d=getData();if(!d)return;
+    const prevLayer=d.layer;
+    // 顺流层判定
+    if(d.passiveIncome>=getTotalExpense(d)&&d.loan===0){
+        if(d.layer!=='prosperity'){d.layer='prosperity';addLog('进入顺流层！被动收入≥总支出且无贷款','layer')}
+    }
+    // 顺流层回落
+    else if(d.layer==='prosperity'){
+        if(d.passiveIncome<getTotalExpense(d)){d.layer='normal';addLog('被动收入不足，回落平流层','layer')}
+    }
+    // 逆流层恢复
+    if(d.layer==='adversity'){
+        d.adversityRounds=(d.adversityRounds||0)+1;
+        if(d.adversityRounds>=3&&!d.isUnemployed){d.layer='normal';d.adversityRounds=0;addLog('逆流期结束，回到平流层','layer')}
+    }
+    if(d.layer!=='adversity'){d.adversityRounds=0}
+    saveData(d);
+    if(prevLayer!==d.layer)refreshUI();
+}
+
+// ==================== 胜利条件检查 ====================
+function checkVictory(){
+    const d=getData();if(!d)return;
+    // 梦想家
+    if(d.layer==='prosperity'&&d.loan===0&&d.dreamAchieved){
+        addLog('🏆 达成梦想家胜利！','victory');endGame('🏆 梦想家','你在顺流层实现了梦想，且无银行贷款！');return
+    }
+    // 慈善家
+    if(d.charity>=10000000){
+        addLog('❤️ 达成慈善家胜利！','victory');endGame('❤️ 慈善家','你的慈善捐赠累计超过1000万元！');return
+    }
+    // 创富家
+    if(d.totalAsset>=100000000&&d.loan===0){
+        addLog('💎 达成创富家胜利！','victory');endGame('💎 创富家','你的总资产超过1亿且无银行贷款！');return
+    }
+    // 60岁退休
+    if(d.age>=60){
+        addLog('60岁钟声响起，游戏结束','event');endGame('🌅 平凡人生','你走过了20-60岁的人生旅程。');return
+    }
+}
+
+function endGame(title,subtitle){
+    const d=getData();if(!d)return;
+    const netAsset=d.totalAsset-d.totalLiability;
+    document.getElementById('gameOverTitle').textContent=title;
+    document.getElementById('gameOverSubtitle').innerHTML=subtitle;
+    document.getElementById('gameOverStats').innerHTML=`
+        <div class="game-over-stat"><div class="game-over-stat-label">最终年龄</div><div class="game-over-stat-value">${d.age}岁</div></div>
+        <div class="game-over-stat"><div class="game-over-stat-label">现金</div><div class="game-over-stat-value">¥${d.cash.toLocaleString()}</div></div>
+        <div class="game-over-stat"><div class="game-over-stat-label">总资产</div><div class="game-over-stat-value">¥${d.totalAsset.toLocaleString()}</div></div>
+        <div class="game-over-stat"><div class="game-over-stat-label">净资产</div><div class="game-over-stat-value" style="color:${netAsset>=0?'#4ade80':'#f87171'}">¥${netAsset.toLocaleString()}</div></div>
+        <div class="game-over-stat"><div class="game-over-stat-label">被动收入</div><div class="game-over-stat-value">¥${d.passiveIncome.toLocaleString()}/月</div></div>
+        <div class="game-over-stat"><div class="game-over-stat-label">慈善累计</div><div class="game-over-stat-value">¥${d.charity.toLocaleString()}</div></div>
+    `;
+    document.getElementById('gameOverOverlay').classList.add('show');
+    // 同步到game.js的storage以便result页面读取
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(d));
+}
+
+// ==================== 年龄推进 ====================
+function advanceAge(){
+    const d=getData();if(!d)return;
+    if(d.round>1&&(d.round-1)%12===0){
+        d.age++;d.year++;
+        addLog(`⏰ ${d.age}岁！人生又过了一年`,'event');
+        // 每5岁敲钟
+        if(d.age%5===0){addLog(`🔔 ${d.age}岁钟声响起！`,'layer')}
+        // 股票收益波动
+        d.stocksYield=0.003+Math.random()*0.005;
+        saveData(d);
+    }
+}
+
+// ==================== 掷骰子 ====================
+function doRollDice(){
+    const d=getData();if(!d)return;
+    if(d.energy<=0){showToast('精力不足！请先休息。');return}
+    d.energy=Math.max(0,d.energy-10);d.round++;
+    advanceAge();
+    // 失业回合
+    if(d.isUnemployed){d.unemployedRounds--;if(d.unemployedRounds<=0){d.isUnemployed=false;addLog('失业期结束，重新就业','income')}}
+    // 保险递减
+    if(d.insurance>0){d.insurance--;if(d.insurance===0)addLog('保险到期失效','event')}
+    saveData(d);
+    const dice=Math.floor(Math.random()*6)+1;
+    const fromPos=d.position;
+    // 动画
+    const diceIcon=document.getElementById('diceIcon');
+    const rollBtn=document.getElementById('rollDiceBtn');
+    diceIcon.classList.add('dice-rolling','dice-glow');rollBtn.disabled=true;
+    let rc=0;const ri=setInterval(()=>{diceIcon.textContent=Math.floor(Math.random()*6)+1;rc++},80);
+    setTimeout(()=>{
+        clearInterval(ri);diceIcon.classList.remove('dice-rolling');
+        diceIcon.textContent=dice;diceIcon.classList.add('dice-bounce','dice-glow');
+        setTimeout(()=>diceIcon.classList.remove('dice-bounce'),300);
+        const targetPos=(fromPos+dice)%24;
+        d.position=targetPos;saveData(d);
+        const tileType=BOARD_TYPES[targetPos];
+        const tile=TILES[targetPos];
+        document.getElementById('diceResult').textContent=dice;
+        document.getElementById('diceEvent').textContent=tile.icon+' '+tile.label;
+        addLog(`掷出${dice}点 → ${tile.icon}${tile.label}`,'event');
+        // 触发格子事件
+        handleTileEvent(targetPos,tileType);
+        checkLayer();checkVictory();refreshUI();
+        rollBtn.disabled=false;
+        setTimeout(()=>diceIcon.classList.remove('dice-glow'),1000);
+    },800);
+}
+
+function handleTileEvent(pos,type){
+    const d=getData();if(!d)return;
+    switch(type){
+        case'start':addCash(2000);addLog('经过起点，获得¥2,000','income');break;
+        case'opportunity':addLog('触发机遇格！可抽取机遇卡','event');break;
+        case'adversity':addLog('触发逆流格！抽取逆流卡接受挑战','event');doDrawCard('adversity');break;
+        case'settlement':{const cf=getMonthlyCashflow();addCash(cf);addLog(`结算日！月现金流 ¥${cf.toLocaleString()}`,'income');break}
+    }
+}
+
+// ==================== 抽卡 ====================
+function doDrawCard(type){
+    const d=getData();if(!d)return;
+    if(d.energy<=0){showToast('精力不足！');return}
+    d.energy=Math.max(0,d.energy-5);saveData(d);
+    const cards=type==='opportunity'?PRO_OPP_CARDS:PRO_ADV_CARDS;
+    // 逆流层机遇卡概率降低
+    let card;
+    if(type==='opportunity'&&d.layer==='adversity'&&Math.random()<0.4){
+        card=cards[0];// 弱化版
+    } else {
+        card=cards[Math.floor(Math.random()*cards.length)];
+    }
+    // 顺流层机遇增强
+    let result=card.effect(d);
+    if(type==='opportunity'&&d.layer==='prosperity'){
+        addPassiveIncome(Math.floor(d.passiveIncome*0.1));
+        result+=' [顺流加成+10%被动收入]';
+    }
+    // 翻牌动画
+    const flip=document.getElementById('cardFlip');flip.classList.remove('flipping');
+    document.getElementById('flipCardName').textContent=(type==='opportunity'?'【机遇】':'【逆流】')+card.title;
+    document.getElementById('flipCardName').style.color=type==='opportunity'?'#4ade80':'#f87171';
+    document.getElementById('flipCardDesc').textContent=card.desc;
+    document.getElementById('flipCardResult').textContent=result;
+    document.getElementById('flipCardResult').style.color=type==='opportunity'?'#4ade80':'#f87171';
+    setTimeout(()=>flip.classList.add('flipping'),100);
+    addLog((type==='opportunity'?'🍀':'⚡')+card.title+'：'+result,type==='opportunity'?'income':'expense');
+    checkLayer();checkVictory();refreshUI();
+}
+
+// ==================== 行动操作 ====================
+function doSettlement(){
+    const d=getData();if(!d)return;
+    const cf=getMonthlyCashflow();d.cash+=cf;d.assets.cash=d.cash;d.round++;
+    advanceAge();recalcAsset(d);saveData(d);
+    addLog(`月度结算：现金流 ¥${cf.toLocaleString()}`,'income');
+    checkLayer();checkVictory();refreshUI();
+}
+function doRest(){
+    const d=getData();if(!d)return;
+    addEnergy(30);d.round++;advanceAge();saveData(d);
+    addLog('休息恢复30精力','event');refreshUI();
+}
+function doCharity(){
+    showModal('慈善捐赠','请输入捐赠金额（累计达¥1,000万可达成慈善家胜利）',true,function(a){
+        const d=getData();if(!d||d.cash<a){showToast('现金不足！');return}
+        d.cash-=a;d.assets.cash=d.cash;d.charity+=a;recalcAsset(d);saveData(d);
+        addLog(`慈善捐赠 ¥${a.toLocaleString()}，累计 ¥${d.charity.toLocaleString()}`,'income');
+        checkVictory();refreshUI();
+    });
+}
+function doBuyInsurance(){
+    const d=getData();if(!d)return;
+    if(d.cash<3000){showToast('现金不足！需¥3,000');return}
+    if(d.insurance>0){showToast('保险仍在有效期内（剩余'+d.insurance+'回合）');return}
+    deductCash(3000);d.insurance=10;saveData(d);
+    addLog('购买保险¥3,000，有效期10回合','event');refreshUI();
+}
+
+// ==================== 投资/贷款/资产 ====================
+function showInvestModal(){
+    const d=getData();if(!d)return;
+    let hint='请输入投资金额';
+    if(d.layer==='prosperity')hint+='（顺流层收益率+50%）';
+    showModal('投资项目',hint,true,function(a){
+        if(d.cash<a){showToast('现金不足！');return}
+        d.cash-=a;d.assets.cash=d.cash;
+        let rate=d.layer==='prosperity'?0.0075:0.005;
+        const pi=Math.floor(a*rate);
+        addPassiveIncome(pi);addAsset('stocks',a);recalcAsset(d);saveData(d);
+        addLog(`投资¥${a.toLocaleString()}，被动收入+¥${pi}/月`,'income');refreshUI();
+    });
+}
+function showLoanModal(){
+    showModal('银行贷款','请输入贷款金额（月利率5%，计入月支出）',true,function(a){
+        const d=getData();if(!d)return;
+        d.totalLiability+=a;d.loan+=a;d.cash+=a;d.assets.cash=d.cash;recalcAsset(d);saveData(d);
+        addLog(`贷款¥${a.toLocaleString()}`,'expense');checkLayer();refreshUI();
+    });
+}
+function showRepayModal(){
+    const d=getData();if(!d)return;
+    showModal('还贷款',`当前贷款：¥${d.loan.toLocaleString()}（月供¥${Math.floor(d.loan*0.05).toLocaleString()}）`,true,function(a){
+        if(d.loan<a||d.cash<a){showToast('贷款或现金不足！');return}
+        d.loan-=a;d.totalLiability-=a;d.cash-=a;d.assets.cash=d.cash;recalcAsset(d);saveData(d);
+        addLog(`还款¥${a.toLocaleString()}`,'income');checkLayer();refreshUI();
+    });
+}
+function showBuyAssetModal(){
+    showModal('购买资产',`<div class="asset-options">
+        <button class="asset-btn" onclick="buyAssetType('property')">🏠 房产(0.5%/月)</button>
+        <button class="asset-btn" onclick="buyAssetType('stocks')">📈 股票(随机)</button>
+        <button class="asset-btn" onclick="buyAssetType('business')">🏢 企业(0.8%/月)</button>
+        <button class="asset-btn" onclick="buyAssetType('sideJob')">💼 副业(固定收入)</button>
+    </div>`,false,null);
+}
+function buyAssetType(t){
+    const names={property:'房产',stocks:'股票基金',business:'企业',sideJob:'副业'};
+    const rates={property:0.005,stocks:0.005,business:0.008,sideJob:0.006};
+    closeModal();
+    const d=getData();let r=rates[t];
+    if(d&&d.layer==='prosperity')r*=1.5;
+    showModal('购买'+names[t],`请输入购买金额（月收益率${(r*100).toFixed(1)}%）`,true,function(a){
+        if(!d||d.cash<a){showToast('现金不足！');return}
+        d.cash-=a;d.assets.cash=d.cash;d.assets[t]+=a;
+        const pi=Math.floor(a*r);addPassiveIncome(pi);recalcAsset(d);saveData(d);
+        addLog(`购买${names[t]}¥${a.toLocaleString()}，被动收入+¥${pi}/月`,'income');refreshUI();
+    });
+}
+function showSellAssetModal(){
+    const d=getData();if(!d)return;
+    showModal('出售资产',`<div class="asset-options">
+        <button class="asset-btn" onclick="sellAssetType('property')">🏠 房产(¥${d.assets.property.toLocaleString()})</button>
+        <button class="asset-btn" onclick="sellAssetType('stocks')">📈 股票(¥${d.assets.stocks.toLocaleString()})</button>
+        <button class="asset-btn" onclick="sellAssetType('business')">🏢 企业(¥${d.assets.business.toLocaleString()})</button>
+        <button class="asset-btn" onclick="sellAssetType('sideJob')">💼 副业(¥${d.assets.sideJob.toLocaleString()})</button>
+    </div>`,false,null);
+}
+function sellAssetType(t){
+    const names={property:'房产',stocks:'股票基金',business:'企业',sideJob:'副业'};
+    closeModal();
+    showModal('出售'+names[t],'请输入出售金额',true,function(a){
+        if(!sellAsset(t,a)){showToast('资产不足！');return}
+        // 出售时减少被动收入（按比例）
+        const d=getData();const ratio=a/(d.assets[t]+a||1);
+        const piLoss=Math.floor(d.passiveIncome*ratio*0.5);
+        deductPassiveIncome(piLoss);
+        addLog(`出售${names[t]}¥${a.toLocaleString()}`,'expense');refreshUI();
+    });
+}
+
+// ==================== 梦想里程碑（顺流层） ====================
+function checkDream(){
+    const d=getData();if(!d)return;
+    if(d.layer==='prosperity'&&!d.dreamAchieved){
+        // 顺流层首次可点击"实现梦想"
+        if(d.passiveIncome>=getTotalExpense(d)*2){
+            d.dreamAchieved=true;saveData(d);
+            addLog('🌟 实现梦想里程碑！','victory');checkVictory();refreshUI();
+        }
+    }
+}
+
+// ==================== UI刷新 ====================
+function refreshUI(){
+    const d=getData();if(!d)return;
+    document.getElementById('jobName').textContent=d.jobName;
+    document.getElementById('age').textContent=d.age+'岁';
+    document.getElementById('round').textContent=d.round;
+    const energyEl=document.getElementById('energy');
+    energyEl.textContent=d.energy;
+    energyEl.style.color=d.energy<=20?'#f87171':d.energy<=50?'#fbbf24':'#4ade80';
+    const salText=d.isUnemployed?'¥0(失业)':('¥'+d.salary.toLocaleString());
+    document.getElementById('salary').textContent=salText;
+    document.getElementById('passiveIncome').textContent='¥'+d.passiveIncome.toLocaleString();
+    document.getElementById('totalExpense').textContent='¥'+getTotalExpense(d).toLocaleString();
+    document.getElementById('cashflow').textContent='¥'+getMonthlyCashflow().toLocaleString();
+    document.getElementById('cash').textContent='¥'+d.cash.toLocaleString();
+    document.getElementById('totalAsset').textContent='¥'+d.totalAsset.toLocaleString();
+    document.getElementById('totalLiability').textContent='¥'+d.totalLiability.toLocaleString();
+    document.getElementById('charity').textContent='¥'+d.charity.toLocaleString();
+    document.getElementById('marriage').textContent=d.married?'已婚':'未婚';
+    document.getElementById('children').textContent=d.children;
+    const tile=TILES[d.position];
+    document.getElementById('position').textContent=tile.icon+' '+tile.label;
+    // 层级
+    ['normal','adversity','prosperity'].forEach(l=>{
+        const el=document.getElementById('layer'+l.charAt(0).toUpperCase()+l.slice(1));
+        el.classList.toggle('active',d.layer===l);
+    });
+    // 胜利追踪
+    document.getElementById('vDreamer').classList.toggle('achieved',d.layer==='prosperity'&&d.loan===0&&d.dreamAchieved);
+    document.getElementById('vPhilanthropist').classList.toggle('achieved',d.charity>=10000000);
+    document.getElementById('vTycoon').classList.toggle('achieved',d.totalAsset>=100000000&&d.loan===0);
+    // 按钮状态
+    const noEnergy=d.energy<=0;
+    document.getElementById('rollDiceBtn').disabled=noEnergy;
+    document.getElementById('oppBtn').disabled=noEnergy;
+    document.getElementById('advBtn').disabled=noEnergy;
+    // 梦想检查
+    checkDream();
+}
+
+// ==================== 模态框系统 ====================
+let modalCb=null;
+function showModal(title,msg,showInput,cb){
+    document.getElementById('modalTitle').textContent=title;
+    document.getElementById('modalMessage').innerHTML=msg;
+    document.getElementById('modalInput').style.display=showInput?'block':'none';
+    document.getElementById('modalInputValue').value='';
+    modalCb=cb;
+    const m=document.getElementById('modal');m.style.display='flex';m.classList.add('show');
+    document.getElementById('modalConfirm').onclick=function(){
+        if(cb&&showInput){const v=parseInt(document.getElementById('modalInputValue').value)||0;if(v>0){closeModal();cb(v)}else{showToast('请输入有效金额')}}
+        else{closeModal();if(cb)cb()}
+    };
+}
+function closeModal(){const m=document.getElementById('modal');m.classList.remove('show');setTimeout(()=>m.style.display='none',300)}
+let confirmCb=null;
+function showConfirm(msg,txt,cb){document.getElementById('confirmMessage').textContent=msg;confirmCb=cb;const m=document.getElementById('confirmModal');m.style.display='flex';m.classList.add('show');const ok=document.getElementById('confirmOk');ok.textContent=txt||'确定';ok.onclick=function(){closeConfirmModal();if(confirmCb)confirmCb()};document.getElementById('confirmCancel').onclick=closeConfirmModal}
+function closeConfirmModal(){const m=document.getElementById('confirmModal');m.classList.remove('show');setTimeout(()=>m.style.display='none',300)}
+function showAlertModal(msg){document.getElementById('alertMessage').textContent=msg;const m=document.getElementById('alertModal');m.style.display='flex';m.classList.add('show')}
+function closeAlertModal(){const m=document.getElementById('alertModal');m.classList.remove('show');setTimeout(()=>m.style.display='none',300)}
+function showToast(msg){const t=document.getElementById('toast');document.getElementById('toastMessage').textContent=msg;t.style.display='block';t.classList.add('show');setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.style.display='none',300)},2000)}
+function toggleRules(){const c=document.getElementById('rulesContent');c.classList.toggle('show')}
+
+// ==================== 初始化 ====================
+function createFloatingStars(){
+    const c=document.getElementById('floatingStars');if(!c)return;
+    for(let i=0;i<25;i++){const s=document.createElement('div');s.className='star-particle';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.width=(Math.random()*2.5+.8)+'px';s.style.height=s.style.width;s.style.animationDuration=(Math.random()*4+3)+'s';s.style.animationDelay=(Math.random()*5)+'s';s.style.opacity=Math.random()*.6+.2;if(Math.random()>.7){s.style.background='rgba(240,192,64,.8)';s.style.boxShadow='0 0 4px rgba(240,192,64,.6)'}c.appendChild(s)}
+}
+
+function confirmRestart(){
+    showConfirm('确定重新开始？当前进度将丢失。','重新开始',function(){
+        localStorage.removeItem(PRO_KEY);localStorage.removeItem(STORAGE_KEY);
+        location.href='select_job.html';
+    });
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+    createFloatingStars();
+    // 背景图检测
+    const bgImg=new Image();bgImg.onerror=function(){document.body.classList.add('bg-fallback')};bgImg.src='bg.jpg';
+
+    let d=getData();
+    // 如果没有pro数据，尝试从旧版迁移
+    if(!d){
+        const oldData=getPlayerData();
+        if(oldData){
+            d={...oldData,layer:'normal',adversityRounds:0,married:false,children:0,charity:0,insurance:0,dreamAchieved:false,stocksYield:0.005,log:[],maxEnergy:100};
+            // 判定初始层级
+            if(d.passiveIncome>=getTotalExpense(d)&&d.loan===0)d.layer='prosperity';
+            saveData(d);
+        }
+    }
+    if(!d){
+        showConfirm('请先选择职业开始游戏！','前往选择',function(){location.href='select_job.html'});
+        return;
+    }
+    refreshUI();renderLog();
+});
+</script>
+</body>
+</html>

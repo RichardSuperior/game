@@ -389,6 +389,40 @@ h1::after {
     letter-spacing: 3px;
 }
 
+/* ===== 宣传片卡片 ===== */
+.video-card {
+    text-align: center;
+    padding: 28px 36px;
+}
+
+.video-title {
+    font-size: 1.15rem;
+    background: linear-gradient(135deg, #f0c040, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+}
+
+.video-wrap {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(240, 192, 64, 0.18);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(240, 192, 64, 0.05);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.promo-video {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    outline: none;
+}
+
 /* 金色渐变圆角按钮 */
 .start-btn {
     display: inline-block;
@@ -485,6 +519,49 @@ h1::after {
     border-bottom: none;
 }
 
+/* ===== 品牌介绍入口 ===== */
+.brand-footer {
+    text-align: center;
+    margin-top: -8px;
+    margin-bottom: 20px;
+}
+
+.brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 32px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(240, 192, 64, 0.15);
+    border-radius: 30px;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.brand-link:hover {
+    background: rgba(240, 192, 64, 0.06);
+    border-color: rgba(240, 192, 64, 0.35);
+    color: #f0c040;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(240, 192, 64, 0.06);
+}
+
+.brand-link-icon {
+    font-size: 1.1rem;
+}
+
+.brand-link-arrow {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.brand-link:hover .brand-link-arrow {
+    transform: translateX(4px);
+}
+
 /* 金色货币图标 */
 .rule-icon {
     color: #f0c040;
@@ -528,6 +605,15 @@ h1::after {
 
     .game-section h2 {
         font-size: 1.25rem;
+    }
+
+    .video-card {
+        padding: 20px 16px;
+    }
+
+    .video-title {
+        font-size: 1rem;
+        margin-bottom: 16px;
     }
 
     .start-btn {

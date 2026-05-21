@@ -1,5 +1,5 @@
 /**
- * 财富流沙盘游戏核心逻辑
+ * 财富流沙盘游戏核心逻辑 - 正式规则版
  */
 
 // 职业配置
@@ -22,49 +22,62 @@ const JOBS = {
     entrepreneur: { name: '创业者', salary: 10000, expense: 6000, initialCash: 4000, initialAsset: 4000 }
 };
 
-// 棋盘格子类型 (24格循环)
+// 棋盘格子类型 (24格循环) - 保持不变
 const BOARD_TYPES = ['start', 'normal', 'normal', 'opportunity', 'normal', 
                      'normal', 'adversity', 'normal', 'normal', 'normal', 
                      'settlement', 'normal', 'normal', 'opportunity', 'normal', 
                      'adversity', 'normal', 'normal', 'settlement', 'normal', 
                      'normal', 'opportunity', 'normal', 'normal'];
 
-// 机遇卡库
+// 机遇卡库（含人生事件）
 const OPPORTUNITY_CARDS = [
     { title: '项目奖金', desc: '完成了一个项目，获得额外奖金', effect: () => { addCash(8000); return '获得 ¥8,000'; } },
     { title: '投资收益', desc: '投资收益到账', effect: () => { addCash(5000); addAsset('stocks', 5000); return '获得 ¥5,000 投资收益'; } },
-    { title: '房产增值', desc: '你的房产升值了', effect: () => { addPassiveIncome(500); return '被动收入 +¥500/月'; } },
+    { title: '房产增值', desc: '持有房产升值，租金增加', effect: () => { addPassiveIncome(500); return '被动收入 +¥500/月'; } },
     { title: '兼职收入', desc: '做了一份兼职', effect: () => { addPassiveIncome(800); return '被动收入 +¥800/月'; } },
     { title: '股票分红', desc: '持有的股票分红了', effect: () => { addCash(3000); return '获得 ¥3,000 分红'; } },
     { title: '知识产权', desc: '出售了一项专利', effect: () => { addCash(20000); return '获得 ¥20,000'; } },
     { title: '副业成功', desc: '副业有了稳定收入', effect: () => { addPassiveIncome(1200); return '被动收入 +¥1,200/月'; } },
-    { title: '朋友借款', desc: '朋友还钱了', effect: () => { addCash(5000); return '获得 ¥5,000'; } },
+    { title: '朋友还款', desc: '朋友还钱了', effect: () => { addCash(5000); return '获得 ¥5,000'; } },
     { title: '年终奖', desc: '获得年终奖金', effect: () => { addCash(15000); return '获得 ¥15,000 年终奖'; } },
-    { title: '租金收入', desc: '出租房产获得租金', effect: () => { addPassiveIncome(1500); return '被动收入 +¥1,500/月'; } }
+    { title: '租金收入', desc: '出租房产获得租金', effect: () => { addPassiveIncome(1500); return '被动收入 +¥1,500/月'; } },
+    { title: '结婚喜事', desc: '步入婚姻殿堂', effect: () => { const d=getPlayerData();if(d.married)return'已结婚，此卡无效';d.married=true;d.fixedExpense+=2000;savePlayerData(d);return'结婚！月支出 +¥2,000'; } },
+    { title: '喜得贵子', desc: '家庭喜添新成员', effect: () => { const d=getPlayerData();if(d.children>=3)return'子女已满3人';d.children++;d.fixedExpense+=1500;savePlayerData(d);return'生子！月支出+¥1,500，子女'+d.children+'人'; } },
+    { title: '加薪升职', desc: '升职加薪', effect: () => { const d=getPlayerData();d.salary=Math.round(d.salary*1.2);savePlayerData(d);return'工资+20% → ¥'+d.salary.toLocaleString()+'/月'; } },
 ];
 
-// 逆流卡库
+// 逆流卡库（含人生事件 - 遵循环规则，无罚款）
 const ADVERSITY_CARDS = [
-    { title: '意外支出', desc: '突发意外需要花钱', effect: () => { deductCash(3000); return '支出 ¥3,000'; } },
-    { title: '精力透支', desc: '过度劳累消耗精力', effect: () => { deductEnergy(30); return '精力 -30'; } },
-    { title: '失业风险', desc: '公司裁员，暂时失业', effect: () => { setUnemployed(3); return '失业 3 回合（无工资）'; } },
-    { title: '医疗支出', desc: '生病需要治疗', effect: () => { deductCash(2000); deductEnergy(20); return '支出 ¥2,000，精力 -20'; } },
-    { title: '被骗投资', desc: '投资失败亏损', effect: () => { addLiability(5000); return '增加负债 ¥5,000'; } },
-    { title: '汽车维修', desc: '车子坏了需要维修', effect: () => { deductCash(4000); return '支出 ¥4,000'; } },
+    { title: '意外支出', desc: '突发意外需要花钱', effect: () => { const d=getPlayerData();let a=3000;if(d.insurance>0)a=Math.ceil(a/2);deductCash(a);return'支出 ¥'+a.toLocaleString()+(d.insurance>0?' (保险减半)':''); } },
+    { title: '精力透支', desc: '过度劳累消耗精力', effect: () => { const d=getPlayerData();let a=30;if(d.insurance>0)a=Math.ceil(a/2);deductEnergy(a);return'精力 -'+a+(d.insurance>0?' (保险减半)':''); } },
+    { title: '失业裁员', desc: '公司裁员，暂时失业', effect: () => { setUnemployed(3); return '失业 3 回合（无工资），进入逆流层'; } },
+    { title: '医疗支出', desc: '生病需要治疗', effect: () => { const d=getPlayerData();let c=2000,e=20;if(d.insurance>0){c=Math.ceil(c/2);e=Math.ceil(e/2)}deductCash(c);deductEnergy(e);return'支出¥'+c+'，精力-'+e+(d.insurance>0?' (保险)':''); } },
+    { title: '投资失败', desc: '投资失败亏损', effect: () => { addLiability(5000); return '增加负债 ¥5,000'; } },
+    { title: '汽车维修', desc: '汽车损坏需要维修', effect: () => { const d=getPlayerData();let a=4000;if(d.insurance>0)a=Math.ceil(a/2);deductCash(a);return'支出 ¥'+a.toLocaleString()+(d.insurance>0?' (保险减半)':''); } },
     { title: '信用卡逾期', desc: '信用卡还款逾期', effect: () => { addLiability(2000); return '增加负债 ¥2,000'; } },
     { title: '人情支出', desc: '随份子钱', effect: () => { deductCash(1500); return '支出 ¥1,500'; } },
-    { title: '被骗', desc: '遇到诈骗', effect: () => { deductCash(6000); return '损失 ¥6,000'; } },
-    { title: '贷款利息', desc: '贷款利息支出', effect: () => { deductCash(1000); return '支出利息 ¥1,000'; } }
+    { title: '遭遇诈骗', desc: '遇到诈骗损失', effect: () => { const d=getPlayerData();let a=6000;if(d.insurance>0)a=Math.ceil(a/2);deductCash(a);return'损失 ¥'+a.toLocaleString()+(d.insurance>0?' (保险减半)':''); } },
+    { title: '离婚', desc: '婚姻破裂', effect: () => { const d=getPlayerData();if(!d.married)return'未婚，此卡无效';d.married=false;d.fixedExpense=Math.max(0,d.fixedExpense-1000);deductCash(10000);savePlayerData(d);return'离婚！支出¥10,000，月支出-¥1,000'; } },
 ];
 
 // LocalStorage 键名
 const STORAGE_KEY = 'wealthFlowPlayerData';
 
-// 获取玩家数据
+// 获取玩家数据（兼容旧版迁移）
 function getPlayerData() {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) {
-        return JSON.parse(data);
+        const d = JSON.parse(data);
+        // 迁移：补充新字段
+        if (d.layer === undefined) d.layer = 'normal';
+        if (d.adversityRounds === undefined) d.adversityRounds = 0;
+        if (d.charity === undefined) d.charity = 0;
+        if (d.married === undefined) d.married = false;
+        if (d.children === undefined) d.children = 0;
+        if (d.insurance === undefined) d.insurance = 0;
+        if (d.dreamAchieved === undefined) d.dreamAchieved = false;
+        if (d.maxEnergy === undefined) d.maxEnergy = 100;
+        return d;
     }
     return null;
 }
@@ -83,6 +96,7 @@ function initPlayerData(jobKey) {
         age: 20,
         year: new Date().getFullYear(),
         energy: 100,
+        maxEnergy: 100,
         salary: job.salary,
         fixedExpense: job.expense,
         passiveIncome: 0,
@@ -92,9 +106,16 @@ function initPlayerData(jobKey) {
         loan: 0,
         position: 0,
         round: 1,
+        layer: 'normal',
+        adversityRounds: 0,
         maxPassiveIncome: 0,
         isUnemployed: false,
         unemployedRounds: 0,
+        married: false,
+        children: 0,
+        charity: 0,
+        insurance: 0,
+        dreamAchieved: false,
         assets: {
             cash: job.initialCash,
             property: 0,
@@ -131,7 +152,6 @@ function deductCash(amount) {
         const deducted = Math.min(data.cash, amount);
         data.cash -= deducted;
         if (amount > deducted) {
-            // 现金不够，从资产扣除
             const remaining = amount - deducted;
             data.totalLiability += remaining;
             data.loan += remaining;
@@ -163,7 +183,7 @@ function deductPassiveIncome(amount) {
 function addEnergy(amount) {
     const data = getPlayerData();
     if (data) {
-        data.energy = Math.min(100, data.energy + amount);
+        data.energy = Math.min(data.maxEnergy, data.energy + amount);
         savePlayerData(data);
     }
 }
@@ -171,8 +191,9 @@ function addEnergy(amount) {
 function deductEnergy(amount) {
     const data = getPlayerData();
     if (data) {
-        data.energy = Math.max(0, data.energy - amount);
+        data.energy -= amount;
         savePlayerData(data);
+        // 不在这里判死，让调用方检查
     }
 }
 
@@ -181,19 +202,6 @@ function addLiability(amount) {
     if (data) {
         data.totalLiability += amount;
         data.loan += amount;
-        savePlayerData(data);
-    }
-}
-
-function reduceLiability(amount) {
-    const data = getPlayerData();
-    if (data && data.loan >= amount && data.cash >= amount) {
-        data.loan -= amount;
-        data.totalLiability -= amount;
-        data.cash -= amount;
-        data.assets.cash = data.cash;
-        data.totalAsset = data.assets.cash + data.assets.property + 
-                          data.assets.stocks + data.assets.business + data.assets.sideJob;
         savePlayerData(data);
     }
 }
@@ -208,31 +216,25 @@ function addAsset(type, amount) {
     }
 }
 
-function sellAsset(type, amount) {
-    const data = getPlayerData();
-    if (data && data.assets.hasOwnProperty(type) && data.assets[type] >= amount) {
-        data.assets[type] -= amount;
-        data.cash += amount;
-        data.assets.cash = data.cash;
-        data.totalAsset = data.assets.cash + data.assets.property + 
-                          data.assets.stocks + data.assets.business + data.assets.sideJob;
-        savePlayerData(data);
-    }
-}
-
 function setUnemployed(rounds) {
     const data = getPlayerData();
     if (data) {
         data.isUnemployed = true;
         data.unemployedRounds = rounds;
+        data.layer = 'adversity'; // 失业触发逆流层
+        data.adversityRounds = 0;
         savePlayerData(data);
     }
 }
 
 // ==================== 游戏核心逻辑 ====================
 
-// 可覆盖的提示函数（页面中可替换为自定义弹窗）
 let showAlert = function(msg) { alert(msg); };
+
+// 获取月总支出（含贷款利息）
+function getTotalExpense(d) {
+    return d.fixedExpense + Math.floor(d.loan * 0.05);
+}
 
 // 掷骰子
 function rollDice() {
@@ -240,17 +242,16 @@ function rollDice() {
     if (!data) return null;
     
     if (data.energy <= 0) {
-        showAlert('精力值为0，无法操作！请先增加精力。');
+        showAlert('精力值为0，无法操作！请先休息增加精力。');
         return null;
     }
     
     const dice = Math.floor(Math.random() * 6) + 1;
     
-    // 只扣除精力，不移动位置（位置由动画逐格更新）
-    data.energy = Math.max(0, data.energy - 10);
+    data.energy = Math.max(-5, data.energy - 10); // 允许降到负数（卡牌效果）
     data.round++;
     
-    // 每12回合年龄+1
+    // 年龄推进
     if (data.round > 1 && (data.round - 1) % 12 === 0) {
         data.age++;
         data.year++;
@@ -264,27 +265,25 @@ function rollDice() {
         }
     }
     
-    // 计算目标位置（不保存，由动画逐格更新）
+    // 保险递减
+    if (data.insurance > 0) {
+        data.insurance--;
+    }
+    
     const targetPosition = (data.position + dice) % 24;
     const targetType = BOARD_TYPES[targetPosition];
     
-    // 保存除position外的数据
     savePlayerData(data);
     
-    return {
-        dice,
-        position: targetPosition,
-        type: targetType
-    };
+    return { dice, position: targetPosition, type: targetType };
 }
 
-// 获取月度现金流
+// 获取月度现金流（含贷款月供）
 function getMonthlyCashflow() {
     const data = getPlayerData();
     if (!data) return 0;
-    
     const income = data.isUnemployed ? 0 : data.salary;
-    return income + data.passiveIncome - data.fixedExpense;
+    return income + data.passiveIncome - getTotalExpense(data);
 }
 
 // 月度结算
@@ -297,7 +296,7 @@ function monthlySettlement() {
     data.assets.cash = data.cash;
     data.round++;
     
-    // 每12回合年龄+1
+    // 年龄推进
     if ((data.round - 1) % 12 === 0) {
         data.age++;
         data.year++;
@@ -312,53 +311,137 @@ function monthlySettlement() {
 function increaseEnergy() {
     const data = getPlayerData();
     if (!data) return;
-    
     addEnergy(50);
 }
 
-// 检查财务自由
-function checkFinancialFreedom() {
+// ==================== 层级与胜利条件 ====================
+
+// 检查并更新层级
+function checkLayer() {
     const data = getPlayerData();
-    if (!data) return false;
+    if (!data) return null;
     
-    return data.passiveIncome >= data.fixedExpense;
+    const prevLayer = data.layer;
+    const totalExp = getTotalExpense(data);
+    
+    // 顺流层判定：被动收入 >= 总支出 且 无银行贷款
+    if (data.passiveIncome >= totalExp && data.loan === 0) {
+        if (data.layer !== 'prosperity') {
+            data.layer = 'prosperity';
+            data.adversityRounds = 0;
+            savePlayerData(data);
+            return 'enter_prosperity';
+        }
+    }
+    // 顺流层回落：被动收入降至总支出以下 或 新增贷款
+    else if (data.layer === 'prosperity') {
+        if (data.passiveIncome < totalExp || data.loan > 0) {
+            data.layer = 'normal';
+            savePlayerData(data);
+            return 'fallback_normal';
+        }
+    }
+    // 逆流层恢复：连续3回合无新打击 且 非失业
+    else if (data.layer === 'adversity') {
+        data.adversityRounds = (data.adversityRounds || 0) + 1;
+        if (data.adversityRounds >= 3 && !data.isUnemployed) {
+            data.layer = 'normal';
+            data.adversityRounds = 0;
+            savePlayerData(data);
+            return 'recover_normal';
+        }
+    }
+    
+    if (data.layer !== 'adversity') {
+        data.adversityRounds = 0;
+    }
+    
+    if (prevLayer !== data.layer) savePlayerData(data);
+    return prevLayer !== data.layer ? 'changed' : null;
 }
 
-// 检查是否60岁
-function checkRetirement() {
+// 检查胜利条件，返回胜利类型或null
+function checkVictory() {
     const data = getPlayerData();
-    if (!data) return false;
+    if (!data) return null;
     
-    return data.age >= 60;
+    // 梦想家：顺流层 + 无贷款 + 实现梦想
+    if (data.layer === 'prosperity' && data.loan === 0 && data.dreamAchieved) {
+        return 'dreamer';
+    }
+    // 慈善家：慈善累计 >= 1000万
+    if (data.charity >= 10000000) {
+        return 'philanthropist';
+    }
+    // 创富家：总资产 >= 1亿 + 无贷款
+    if (data.totalAsset >= 100000000 && data.loan === 0) {
+        return 'tycoon';
+    }
+    // 60岁退休
+    if (data.age >= 60) {
+        return 'retired';
+    }
+    // 精力透支出局
+    if (data.energy <= -2) {
+        return 'energy_depleted';
+    }
+    return null;
 }
 
-// 检查净资产
-function checkNetAsset() {
-    const data = getPlayerData();
-    if (!data) return 0;
-    
-    return data.totalAsset - data.totalLiability;
+// 检查5岁钟声提醒
+function checkAgeBell(prevAge, newAge) {
+    for (let a = prevAge + 1; a <= newAge; a++) {
+        if (a % 5 === 0) return a;
+    }
+    return null;
 }
 
-// 抽取机遇卡
+// 检查是否经过结算格（路过触发）
+function checkPassSettlement(oldPos, newPos) {
+    // 24格棋盘：结算格在 index 10 和 18
+    const settlements = [10, 18];
+    let passed = false;
+    // 正向移动时检查
+    if (newPos >= oldPos) {
+        for (let p = oldPos + 1; p <= newPos; p++) {
+            if (settlements.includes(p)) passed = true;
+        }
+    } else {
+        // 穿过棋盘末尾回到开头
+        for (let p = oldPos + 1; p < 24; p++) {
+            if (settlements.includes(p)) passed = true;
+        }
+        for (let p = 0; p <= newPos; p++) {
+            if (settlements.includes(p)) passed = true;
+        }
+    }
+    return passed;
+}
+
+// ==================== 抽卡 ====================
+
 function drawOpportunityCard() {
     const data = getPlayerData();
     if (!data) return null;
     
     if (data.energy <= 0) {
-        showAlert('精力值为0，无法操作！请先增加精力。');
+        showAlert('精力值为0，无法操作！请先休息增加精力。');
         return null;
     }
     
-    // 先扣除精力并保存
-    data.energy = Math.max(0, data.energy - 5);
+    data.energy = Math.max(-5, data.energy - 5);
     savePlayerData(data);
     
     const cardIndex = Math.floor(Math.random() * OPPORTUNITY_CARDS.length);
     const card = OPPORTUNITY_CARDS[cardIndex];
-    const result = card.effect();
+    let result = card.effect();
     
-    // effect()已经通过addCash等函数更新了localStorage，重新读取并更新maxPassiveIncome
+    // 顺流层加成
+    if (data.layer === 'prosperity' && (card.title.includes('收入') || card.title.includes('收益'))) {
+        addPassiveIncome(Math.floor(data.passiveIncome * 0.05));
+        result += ' [顺流+5%被动收入]';
+    }
+    
     const updatedData = getPlayerData();
     updatedData.maxPassiveIncome = Math.max(updatedData.maxPassiveIncome, updatedData.passiveIncome);
     savePlayerData(updatedData);
@@ -366,29 +449,27 @@ function drawOpportunityCard() {
     return { ...card, result };
 }
 
-// 抽取逆流卡
 function drawAdversityCard() {
     const data = getPlayerData();
     if (!data) return null;
     
     if (data.energy <= 0) {
-        showAlert('精力值为0，无法操作！请先增加精力。');
+        showAlert('精力值为0，无法操作！请先休息增加精力。');
         return null;
     }
     
-    // 先扣除精力
-    data.energy = Math.max(0, data.energy - 5);
+    data.energy = Math.max(-5, data.energy - 5);
     savePlayerData(data);
     
     const cardIndex = Math.floor(Math.random() * ADVERSITY_CARDS.length);
     const card = ADVERSITY_CARDS[cardIndex];
     const result = card.effect();
     
-    // effect()已经通过deductCash等函数更新了localStorage，无需再save
     return { ...card, result };
 }
 
-// 获取格子类型名称
+// ==================== 辅助函数 ====================
+
 function getBoardTypeName(type) {
     const names = {
         'start': '起点',
@@ -400,7 +481,7 @@ function getBoardTypeName(type) {
     return names[type] || '普通格';
 }
 
-// 投资项目（简化版）
+// 投资项目
 function investProject(amount) {
     const data = getPlayerData();
     if (!data || data.cash < amount) {
@@ -412,7 +493,9 @@ function investProject(amount) {
     data.assets.cash = data.cash;
     data.totalAsset = data.assets.cash + data.assets.property + 
                       data.assets.stocks + data.assets.business + data.assets.sideJob;
-    data.passiveIncome += Math.floor(amount * 0.005); // 0.5% 月收益
+    // 顺流层投资收益率 +50%
+    const rate = data.layer === 'prosperity' ? 0.0075 : 0.005;
+    data.passiveIncome += Math.floor(amount * rate);
     data.maxPassiveIncome = Math.max(data.maxPassiveIncome, data.passiveIncome);
     savePlayerData(data);
     return true;
@@ -440,7 +523,6 @@ function repayLoan(amount) {
         showAlert('无法还款，请检查贷款金额和现金余额！');
         return false;
     }
-    
     data.loan -= amount;
     data.totalLiability -= amount;
     data.cash -= amount;
@@ -458,10 +540,14 @@ function buyAsset(type, amount) {
         showAlert('现金不足！');
         return false;
     }
-    
     data.cash -= amount;
     data.assets.cash = data.cash;
     data.assets[type] += amount;
+    // 资产产生被动收入
+    const rates = { property: 0.005, stocks: 0.004, business: 0.008, sideJob: 0.006 };
+    const rate = (data.layer === 'prosperity') ? (rates[type] || 0.005) * 1.5 : (rates[type] || 0.005);
+    data.passiveIncome += Math.floor(amount * rate);
+    data.maxPassiveIncome = Math.max(data.maxPassiveIncome, data.passiveIncome);
     data.totalAsset = data.assets.cash + data.assets.property + 
                       data.assets.stocks + data.assets.business + data.assets.sideJob;
     savePlayerData(data);
@@ -475,14 +561,58 @@ function doSellAsset(type, amount) {
         showAlert('资产不足！');
         return false;
     }
+    // 出售时按比例减少被动收入
+    const ratio = amount / (data.assets[type] + amount || 1);
+    const piLoss = Math.floor(data.passiveIncome * ratio * 0.5);
     
     data.assets[type] -= amount;
     data.cash += amount;
     data.assets.cash = data.cash;
+    data.passiveIncome = Math.max(0, data.passiveIncome - piLoss);
     data.totalAsset = data.assets.cash + data.assets.property + 
                       data.assets.stocks + data.assets.business + data.assets.sideJob;
     savePlayerData(data);
     return true;
+}
+
+// 慈善捐赠
+function doCharity(amount) {
+    const data = getPlayerData();
+    if (!data || data.cash < amount) {
+        showAlert('现金不足！');
+        return false;
+    }
+    data.cash -= amount;
+    data.assets.cash = data.cash;
+    data.charity += amount;
+    data.totalAsset = data.assets.cash + data.assets.property + 
+                      data.assets.stocks + data.assets.business + data.assets.sideJob;
+    savePlayerData(data);
+    return true;
+}
+
+// 购买保险
+function buyInsurance() {
+    const data = getPlayerData();
+    if (!data || data.cash < 3000) return false;
+    deductCash(3000);
+    data.insurance = 10;
+    savePlayerData(data);
+    return true;
+}
+
+// 检查财务自由（用于旧兼容）
+function checkFinancialFreedom() {
+    const data = getPlayerData();
+    if (!data) return false;
+    return data.passiveIncome >= getTotalExpense(data);
+}
+
+// 检查是否60岁
+function checkRetirement() {
+    const data = getPlayerData();
+    if (!data) return false;
+    return data.age >= 60;
 }
 
 // 格式化金额

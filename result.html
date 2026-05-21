@@ -21,6 +21,16 @@
             <h1 class="page-title">人生结局</h1>
         </header>
 
+        <!-- 结局视频 -->
+        <div class="card video-card" id="videoCard" style="display:none">
+            <h2 class="card-title">📹 人生回顾</h2>
+            <div class="video-wrap">
+                <video id="endVideo" class="end-video" playsinline muted preload="metadata" controls>
+                    <source src="nine.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
         <!-- 基础信息 -->
         <div class="card">
             <h2 class="card-title">基础信息</h2>
@@ -119,6 +129,32 @@
             const bgImg = new Image();
             bgImg.onerror = function() { document.body.classList.add('bg-fallback'); };
             bgImg.src = 'bg.jpg';
+
+            // 检测结局视频是否可播放，不支持则隐藏
+            const video = document.getElementById('endVideo');
+            const videoCard = document.getElementById('videoCard');
+            if (video && videoCard) {
+                const canPlay = video.canPlayType && video.canPlayType('video/mp4') !== '';
+                if (!canPlay) return;
+
+                const testTimeout = setTimeout(() => {
+                    videoCard.style.display = 'none';
+                }, 4000);
+
+                const showVideo = () => {
+                    clearTimeout(testTimeout);
+                    videoCard.style.display = 'block';
+                };
+
+                video.addEventListener('loadedmetadata', showVideo, { once: true });
+                video.addEventListener('canplay', showVideo, { once: true });
+                video.addEventListener('error', () => {
+                    clearTimeout(testTimeout);
+                    videoCard.style.display = 'none';
+                }, { once: true });
+
+                video.load();
+            }
         });
 
         function loadResultData() {

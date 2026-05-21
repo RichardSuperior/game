@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="game.css">
 </head>
 <body>
+    <!-- 背景音乐 -->
+    <audio id="bgmAudio" src="bgm.MP3" loop preload="auto"></audio>
+    <!-- 音乐控制按钮 -->
+    <button id="bgmToggle" class="bgm-toggle" title="播放/暂停背景音乐">🎵</button>
+
     <!-- 飘浮星光粒子 -->
     <div class="floating-stars" id="floatingStars"></div>
     <!-- 流星 -->
@@ -18,7 +23,7 @@
 
     <div class="container">
         <header class="page-header">
-            <h1 class="page-title">财富流沙盘 - 20 ~ 60 岁人生模拟</h1>
+            <h1 class="page-title">财富流沙盘 · 20 ~ 60 岁人生模拟</h1>
         </header>
 
         <!-- 玩家信息卡片 - 放在最上方 -->
@@ -62,6 +67,18 @@
             <div class="info-item">
                 <span class="info-label">当前位置</span>
                 <span class="info-value" id="position">起点</span>
+            </div>
+            <div class="info-item" id="layerInfo">
+                <span class="info-label">当前层级</span>
+                <span class="info-value" id="layerName">平流层</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">慈善累计</span>
+                <span class="info-value" id="charity">¥0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">婚姻/子女</span>
+                <span class="info-value" id="family">-</span>
             </div>
         </div>
 
@@ -134,15 +151,17 @@
             <div class="card" style="grid-column: 1 / -1;">
                 <h2 class="card-title">行动操作</h2>
                 <div class="action-grid">
-                    <button class="action-btn" onclick="doMonthlySettlement()">月度结算</button>
-                    <button class="action-btn" onclick="doIncreaseEnergy()">增加精力</button>
-                    <button class="action-btn" onclick="showInvestModal()">投资项目</button>
-                    <button class="action-btn" onclick="showLoanModal()">银行贷款</button>
-                    <button class="action-btn" onclick="showRepayModal()">还贷款</button>
-                    <button class="action-btn" onclick="showBuyAssetModal()">购买资产</button>
-                    <button class="action-btn" onclick="showSellAssetModal()">出售资产</button>
-                    <button class="action-btn" onclick="location.href='asset.html'">查看报表</button>
-                    <button class="action-btn" onclick="showGameOver()">结束游戏</button>
+                    <button class="action-btn" onclick="doMonthlySettlement()">💰 月度结算</button>
+                    <button class="action-btn" onclick="doIncreaseEnergy()">😴 休息（+50精力）</button>
+                    <button class="action-btn" onclick="showInvestModal()">📈 投资项目</button>
+                    <button class="action-btn" onclick="showLoanModal()">🏦 银行贷款</button>
+                    <button class="action-btn" onclick="showRepayModal()">💳 还贷款</button>
+                    <button class="action-btn" onclick="showBuyAssetModal()">🏠 购买资产</button>
+                    <button class="action-btn" onclick="showSellAssetModal()">📤 出售资产</button>
+                    <button class="action-btn" onclick="showCharityModal()">❤️ 慈善捐赠</button>
+                    <button class="action-btn" onclick="showInsuranceModal()">🛡️ 购买保险</button>
+                    <button class="action-btn" onclick="location.href='asset.html'">📊 查看报表</button>
+                    <button class="action-btn" onclick="showGameOver()">🏁 结束游戏</button>
                 </div>
             </div>
 
@@ -551,6 +570,62 @@
             const bgImg = new Image();
             bgImg.onerror = function() { document.body.classList.add('bg-fallback'); };
             bgImg.src = 'bg.jpg';
+
+            // ===== 背景音乐控制 =====
+            const bgm = document.getElementById('bgmAudio');
+            const bgmBtn = document.getElementById('bgmToggle');
+            let bgmPlaying = false;
+
+            if (bgm && bgmBtn) {
+                // 自动播放（需用户首次交互）
+                const tryAutoPlay = () => {
+                    bgm.volume = 0.35;
+                    bgm.play().then(() => {
+                        bgmPlaying = true;
+                        bgmBtn.textContent = '🎵';
+                        bgmBtn.classList.remove('paused');
+                    }).catch(() => {
+                        bgmPlaying = false;
+                        bgmBtn.textContent = '🔇';
+                        bgmBtn.classList.add('paused');
+                    });
+                };
+
+                // 首次用户交互时开始播放
+                const playOnInteract = () => {
+                    tryAutoPlay();
+                    document.removeEventListener('click', playOnInteract);
+                    document.removeEventListener('touchstart', playOnInteract);
+                    document.removeEventListener('keydown', playOnInteract);
+                };
+                document.addEventListener('click', playOnInteract, { once: true });
+                document.addEventListener('touchstart', playOnInteract, { once: true });
+                document.addEventListener('keydown', playOnInteract, { once: true });
+
+                // 点击按钮切换播放/暂停
+                bgmBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (bgmPlaying) {
+                        bgm.pause();
+                        bgmPlaying = false;
+                        bgmBtn.textContent = '🔇';
+                        bgmBtn.classList.add('paused');
+                    } else {
+                        bgm.play().then(() => {
+                            bgmPlaying = true;
+                            bgmBtn.textContent = '🎵';
+                            bgmBtn.classList.remove('paused');
+                        }).catch(() => {});
+                    }
+                });
+
+                // 音频结束事件防护
+                bgm.addEventListener('ended', () => {
+                    bgmPlaying = false;
+                    bgmBtn.textContent = '🔇';
+                    bgmBtn.classList.add('paused');
+                });
+            }
             
             const data = getPlayerData();
             if (!data) {
@@ -591,39 +666,67 @@
             document.getElementById('totalAsset').textContent = '¥' + data.totalAsset.toLocaleString();
             document.getElementById('totalLiability').textContent = '¥' + data.totalLiability.toLocaleString();
             
-            // 位置信息使用TILE_CONTENTS
+            // 位置信息
             const tileContent = TILE_CONTENTS[data.position];
             document.getElementById('position').textContent = tileContent.icon + ' ' + tileContent.label + ' (第' + (data.position + 1) + '格)';
 
+            // 层级显示
+            const layerNames = { normal: '🌊 平流层', adversity: '🌪️ 逆流层', prosperity: '☀️ 顺流层' };
+            const layerNameEl = document.getElementById('layerName');
+            const layerInfoEl = document.getElementById('layerInfo');
+            layerNameEl.textContent = layerNames[data.layer] || '平流层';
+            if (data.layer === 'normal') {
+                layerInfoEl.style.borderLeftColor = 'rgba(96,165,250,0.5)';
+                layerNameEl.style.color = '#93c5fd';
+            } else if (data.layer === 'adversity') {
+                layerInfoEl.style.borderLeftColor = 'rgba(248,113,113,0.5)';
+                layerNameEl.style.color = '#fca5a5';
+            } else if (data.layer === 'prosperity') {
+                layerInfoEl.style.borderLeftColor = 'rgba(250,204,21,0.5)';
+                layerNameEl.style.color = '#fde68a';
+            }
+
+            // 慈善、家庭
+            document.getElementById('charity').textContent = '¥' + (data.charity||0).toLocaleString();
+            let familyText = data.married ? '💍 已婚' : '未婚';
+            if (data.children > 0) familyText += ' · 👶 ' + data.children + '孩';
+            document.getElementById('family').textContent = familyText;
+
             // 更新精力颜色
             const energyEl = document.getElementById('energy');
-            if (data.energy <= 20) {
+            if (data.energy <= 0) {
                 energyEl.style.color = '#f87171';
+            } else if (data.energy <= 20) {
+                energyEl.style.color = '#ef4444';
             } else if (data.energy <= 50) {
                 energyEl.style.color = '#fbbf24';
             } else {
                 energyEl.style.color = '#4ade80';
             }
 
+            // 保险状态
+            if (data.insurance > 0) {
+                energyEl.textContent = data.energy + ' 🛡️';
+            }
+
             // 同步棋盘中心信息
             document.getElementById('boardRound').textContent = data.round || 1;
             document.getElementById('boardAgeInfo').textContent = data.age + '岁 · ' + tileContent.icon + tileContent.label;
 
-            // 检查财务自由
-            if (checkFinancialFreedom()) {
-                playSound('success');
-                showToast('恭喜！您已实现财务自由！');
-                setTimeout(() => {
-                    window.location.href = 'result.html';
-                }, 1500);
-            }
-
-            // 检查年龄
-            if (checkRetirement()) {
-                showToast('您已60岁，游戏结束！');
-                setTimeout(() => {
-                    window.location.href = 'result.html';
-                }, 1500);
+            // 检查胜利条件
+            const victory = checkVictory();
+            if (victory) {
+                const victoryNames = {
+                    dreamer: '🏆 梦想家！在顺流层实现梦想且无银行贷款',
+                    philanthropist: '❤️ 慈善家！慈善捐赠累计超过1000万元',
+                    tycoon: '💎 创富家！总资产超过1亿且无银行贷款',
+                    retired: '🌅 平凡人生！60岁退休',
+                    energy_depleted: '⚡ 精力耗尽出局！'
+                };
+                playSound(victory === 'energy_depleted' ? 'fail' : 'success');
+                showToast(victoryNames[victory] || '游戏结束！');
+                setTimeout(() => { window.location.href = 'result.html'; }, 2000);
+                return;
             }
         }
 
@@ -709,6 +812,30 @@
                         showToast('经过起点！获得 ¥1,000 奖励');
                     }
 
+                    // 检查是否经过结算格
+                    if (checkPassSettlement(fromPos, result.position) && result.type !== 'settlement') {
+                        const cf = getMonthlyCashflow();
+                        addCash(cf);
+                        showToast('经过结算格，领取月现金流 ¥' + cf.toLocaleString());
+                    }
+
+                    // 层级检查和5岁钟声
+                    const prevAge = finalData.age;
+                    const layerResult = checkLayer();
+                    if (layerResult === 'enter_prosperity') {
+                        playSound('success');
+                        showToast('🎉 恭喜进入顺流层！被动收入 ≥ 总支出');
+                    } else if (layerResult === 'recover_normal') {
+                        showToast('走出逆流层，回到平流层');
+                    } else if (layerResult === 'fallback_normal') {
+                        showToast('被动收入不足，回落平流层');
+                    }
+                    
+                    const bellAge = checkAgeBell(prevAge, getPlayerData().age);
+                    if (bellAge) {
+                        showToast('🔔 ' + bellAge + '岁钟声响起！');
+                    }
+
                     // 最终刷新
                     refreshDisplay();
                     updatePlayerPosition(false);
@@ -753,6 +880,7 @@
                 setTimeout(() => cardDisplay.classList.remove('success-effect'), 600);
             }, 800);
             
+            checkLayer();
             refreshDisplay();
         }
 
@@ -787,6 +915,7 @@
                 setTimeout(() => cardDisplay.classList.remove('fail-effect'), 600);
             }, 800);
             
+            checkLayer();
             refreshDisplay();
         }
 
@@ -801,7 +930,8 @@
             cashflowEl.classList.add('value-up');
             setTimeout(() => cashflowEl.classList.remove('value-up'), 500);
             
-            showToast('月度结算：现金流 ' + formatMoney(cashflow));
+            showToast('月度结算：月现金流 ' + formatMoney(cashflow));
+            checkLayer();
             refreshDisplay();
         }
 
@@ -908,6 +1038,35 @@
             showConfirm('确定要结束当前游戏吗？', '结束游戏', function() {
                 window.location.href = 'result.html';
             });
+        }
+
+        // ===== 慈善捐赠 =====
+        function showCharityModal() {
+            showModal('❤️ 慈善捐赠', '请输入捐赠金额（累计¥1,000万达成慈善家胜利）', true, function(amount) {
+                if (doCharity(amount)) {
+                    playSound('coin');
+                    showToast('捐赠成功：' + formatMoney(amount) + '，累计 ¥' + getPlayerData().charity.toLocaleString());
+                }
+                refreshDisplay();
+            });
+        }
+
+        // ===== 购买保险 =====
+        function showInsuranceModal() {
+            const data = getPlayerData();
+            if (data.insurance > 0) {
+                showToast('保险仍在有效期内（剩余' + data.insurance + '回合）');
+                return;
+            }
+            showConfirm('花费¥3,000购买保险（持续10回合，逆流卡伤害减半）', '购买保险', function() {
+                if (buyInsurance()) {
+                    playSound('coin');
+                    showToast('保险已生效！有效期10回合');
+                } else {
+                    showToast('现金不足！需¥3,000');
+                }
+                refreshDisplay();
+            }, false);
         }
 
         // 确认重新开始

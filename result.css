@@ -236,6 +236,29 @@ body::after {
     flex-shrink: 0;
 }
 
+/* ===== 结局视频卡片 ===== */
+.video-card {
+    text-align: center;
+}
+
+.video-wrap {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(240, 192, 64, 0.18);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(240, 192, 64, 0.05);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.end-video {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    outline: none;
+}
+
 /* ===== 数据行 ===== */
 .data-row {
     display: flex;
