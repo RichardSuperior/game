@@ -122,7 +122,19 @@
                         <p>触发事件: <span id="diceEvent">-</span></p>
                     </div>
                 </div>
-                <button class="btn btn-primary" id="rollDiceBtn" onclick="doRollDice()">掷骰子</button>
+                <div class="dice-action-row">
+                    <button class="btn btn-primary" id="rollDiceBtn" onclick="doRollDice()">掷骰子</button>
+                    <div class="dice3d-wrap" id="dice3dWrap" style="display:none">
+                        <div class="dice3d" id="dice3d">
+                            <div class="d3-face d3-front"><span></span></div>
+                            <div class="d3-face d3-back"><span></span></div>
+                            <div class="d3-face d3-right"><span></span></div>
+                            <div class="d3-face d3-left"><span></span></div>
+                            <div class="d3-face d3-top"><span></span></div>
+                            <div class="d3-face d3-bottom"><span></span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- 命运抽卡卡片 -->
@@ -566,6 +578,9 @@
             // 创建飘浮星光粒子
             createGameFloatingStars();
 
+            // ===== 初始化 3D 骰子点阵 =====
+            initDice3D();
+
             // 检测背景图是否加载成功
             const bgImg = new Image();
             bgImg.onerror = function() { document.body.classList.add('bg-fallback'); };
@@ -731,6 +746,27 @@
         }
 
         // 掷骰子
+        // ===== 初始化 3D 骰子点阵 =====
+        function initDice3D() {
+            const d3 = document.getElementById('dice3d');
+            if (!d3) return;
+            // 背面6点
+            const back = d3.querySelector('.d3-back');
+            for (let i = 0; i < 6; i++) { const s = document.createElement('span'); back.appendChild(s); }
+            // 右面2点
+            const right = d3.querySelector('.d3-right');
+            for (let i = 0; i < 2; i++) { const s = document.createElement('span'); right.appendChild(s); }
+            // 左面5点
+            const left = d3.querySelector('.d3-left');
+            for (let i = 0; i < 5; i++) { const s = document.createElement('span'); left.appendChild(s); }
+            // 顶面3点
+            const top = d3.querySelector('.d3-top');
+            for (let i = 0; i < 3; i++) { const s = document.createElement('span'); top.appendChild(s); }
+            // 底面4点
+            const bottom = d3.querySelector('.d3-bottom');
+            for (let i = 0; i < 4; i++) { const s = document.createElement('span'); bottom.appendChild(s); }
+        }
+
         function doRollDice() {
             const data = getPlayerData();
             if (!data) return;
@@ -741,15 +777,23 @@
 
             const diceIcon = document.getElementById('diceIcon');
             const rollBtn = document.getElementById('rollDiceBtn');
+            const d3Wrap = document.getElementById('dice3dWrap');
+            const d3 = document.getElementById('dice3d');
             
             const fromPos = data.position;
             
             // 播放骰子音效
             playSound('dice');
             
+            // 显示3D骰子并播放旋转动画
+            d3Wrap.style.display = 'block';
+            d3.className = 'dice3d rolling';
+
             // 添加滚动动画
             diceIcon.classList.add('dice-rolling', 'dice-glow');
             rollBtn.disabled = true;
+
+            let rollDiceResult = null;
             
             // 快速切换数字
             let rollCount = 0;
@@ -758,62 +802,74 @@
                 rollCount++;
             }, 80);
             
+            // 动画结束自动复位 + 1s后获取结果
+            d3.addEventListener('animationend', function onAnimEnd() {
+                d3.removeEventListener('animationend', onAnimEnd);
+                // 动画结束但结果还没出来，先恢复基础状态
+                if (!rollDiceResult) {
+                    d3.className = 'dice3d';
+                }
+            });
+
             // 1秒后停止
             setTimeout(() => {
                 clearInterval(rollInterval);
                 diceIcon.classList.remove('dice-rolling');
                 
-                const result = rollDice();
-                if (!result) {
+                rollDiceResult = rollDice();
+                if (!rollDiceResult) {
                     diceIcon.classList.remove('dice-glow');
                     rollBtn.disabled = false;
                     return;
                 }
                 
-                // 最终结果显示
-                diceIcon.textContent = result.dice;
-                playSound('diceEnd');
+                // 结果出来，同步3D骰子面
+                d3.className = 'dice3d d3-show-' + rollDiceResult.dice;
                 
+                // 最终结果显示 - 文字
+                diceIcon.textContent = rollDiceResult.dice;
+                playSound('diceEnd');
+
                 // 弹跳效果
                 diceIcon.classList.add('dice-bounce', 'dice-glow');
                 setTimeout(() => {
                     diceIcon.classList.remove('dice-bounce');
                 }, 300);
                 
-                document.getElementById('diceResult').textContent = result.dice;
-                document.getElementById('diceEvent').textContent = getBoardTypeName(result.type);
+                document.getElementById('diceResult').textContent = rollDiceResult.dice;
+                document.getElementById('diceEvent').textContent = getBoardTypeName(rollDiceResult.type);
 
                 // 立即刷新面板（精力已扣除、回合数已增加）
                 refreshDisplay();
 
                 // 棋盘移动动画（逐格移动）
-                animatePlayerMove(fromPos, result.dice).then(() => {
+                animatePlayerMove(fromPos, rollDiceResult.dice).then(() => {
                     // 确保最终位置写入
                     const finalData = getPlayerData();
-                    finalData.position = result.position;
+                    finalData.position = rollDiceResult.position;
                     savePlayerData(finalData);
 
                     rollBtn.disabled = false;
 
                     // 移动完毕后触发格子事件
-                    if (result.type === 'opportunity') {
+                    if (rollDiceResult.type === 'opportunity') {
                         playSound('opportunity');
                         showToast('触发机遇格！可以抽取机遇卡');
-                    } else if (result.type === 'adversity') {
+                    } else if (rollDiceResult.type === 'adversity') {
                         playSound('adversity');
                         showToast('触发逆流格！抽取逆流卡接受挑战');
-                    } else if (result.type === 'settlement') {
+                    } else if (rollDiceResult.type === 'settlement') {
                         playSound('coin');
                         doMonthlySettlement();
                         showToast('结算日！自动进行月度结算');
-                    } else if (result.type === 'start') {
+                    } else if (rollDiceResult.type === 'start') {
                         playSound('coin');
                         addCash(1000);
                         showToast('经过起点！获得 ¥1,000 奖励');
                     }
 
                     // 检查是否经过结算格
-                    if (checkPassSettlement(fromPos, result.position) && result.type !== 'settlement') {
+                    if (checkPassSettlement(fromPos, rollDiceResult.position) && rollDiceResult.type !== 'settlement') {
                         const cf = getMonthlyCashflow();
                         addCash(cf);
                         showToast('经过结算格，领取月现金流 ¥' + cf.toLocaleString());

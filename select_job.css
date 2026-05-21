@@ -249,6 +249,43 @@ body::after {
     letter-spacing: 1px;
 }
 
+/* ===== 职业演示视频 ===== */
+.job-video-card {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.job-video-card .card-title {
+    font-size: 1.05rem;
+    background: linear-gradient(135deg, #f0c040, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+}
+
+.job-video-card .video-wrap {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(240, 192, 64, 0.18);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(240, 192, 64, 0.05);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.job-video {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    outline: none;
+}
+
+@media (max-width: 600px) {
+    .job-video-card { margin-bottom: 18px; }
+}
+
 /* 职业面板 - 磨砂玻璃卡片 */
 .jobs-panel {
     background: rgba(255, 255, 255, 0.04);
@@ -395,6 +432,37 @@ body::after {
     background: rgba(240, 192, 64, 0.12);
     color: #f0c040;
     border: 1px solid rgba(240, 192, 64, 0.2);
+}
+
+/* 随机选择职业 */
+.random-section {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.random-btn {
+    padding: 10px 36px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(240, 192, 64, 0.85);
+    background: rgba(240, 192, 64, 0.06);
+    border: 1.5px solid rgba(240, 192, 64, 0.25);
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 2px;
+}
+
+.random-btn:hover {
+    background: rgba(240, 192, 64, 0.12);
+    border-color: rgba(240, 192, 64, 0.45);
+    color: #f0c040;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(240, 192, 64, 0.12);
+}
+
+.random-btn:active {
+    transform: translateY(0) scale(0.97);
 }
 
 /* 按钮组 */

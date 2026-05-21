@@ -18,9 +18,20 @@
 
     <div class="container">
         <h1 class="page-title anim-fade-up" style="animation-delay:0.1s">选择您的职业</h1>
-        <p class="subtitle anim-fade-up" style="animation-delay:0.25s">不同职业有不同的起始收入与支出，影响你的财富起点</p>
 
-        <div class="jobs-panel anim-fade-up" style="animation-delay:0.4s">
+        <!-- 职业演示视频 -->
+        <div class="card job-video-card anim-fade-up" id="jobVideoCard" style="animation-delay:0.25s;display:none">
+            <h2 class="card-title">🎬 职业与人生推演</h2>
+            <div class="video-wrap">
+                <video id="jobVideo" class="job-video" playsinline muted preload="metadata" controls>
+                    <source src="game.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+
+        <p class="subtitle anim-fade-up" style="animation-delay:0.35s">不同职业有不同的起始收入与支出，影响你的财富起点</p>
+
+        <div class="jobs-panel anim-fade-up" style="animation-delay:0.45s">
             <label class="job-option" data-index="0">
                 <input type="radio" name="job" value="software_engineer" checked>
                 <div class="job-name">软件工程师</div>
@@ -182,6 +193,12 @@
             </label>
         </div>
 
+        <div class="random-section anim-fade-up" style="animation-delay:0.55s">
+            <button class="random-btn" onclick="randomSelectJob()">
+                <span class="random-btn-text">🎲 随机选择职业</span>
+            </button>
+        </div>
+
         <div class="button-group anim-fade-up" style="animation-delay:0.6s">
             <button class="start-game-btn" onclick="confirmStart()">
                 <span class="btn-text">确认开始游戏</span>
@@ -288,6 +305,23 @@
         });
     }
 
+    // ========== 随机选择职业 ==========
+    function randomSelectJob() {
+        const jobs = document.querySelectorAll('input[name="job"]');
+        if (jobs.length === 0) return;
+        const randomIndex = Math.floor(Math.random() * jobs.length);
+        const selected = jobs[randomIndex];
+        selected.checked = true;
+        playSelectSound();
+        // 高亮拍动效果
+        const label = selected.closest('.job-option');
+        if (label) {
+            label.classList.add('pulse-once');
+            setTimeout(() => label.classList.remove('pulse-once'), 500);
+            label.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
     // ========== 确认开始 ==========
     function confirmStart() {
         playConfirmSound();
@@ -305,6 +339,21 @@
     document.addEventListener('DOMContentLoaded', () => {
         createFloatingStars();
         bindJobEvents();
+
+        // 检测职业视频是否可播放
+        const jobVideo = document.getElementById('jobVideo');
+        const jobVideoCard = document.getElementById('jobVideoCard');
+        if (jobVideo && jobVideoCard) {
+            const canPlay = jobVideo.canPlayType && jobVideo.canPlayType('video/mp4') !== '';
+            if (!canPlay) {} else {
+                const testTimeout = setTimeout(() => { jobVideoCard.style.display = 'none'; }, 4000);
+                const show = () => { clearTimeout(testTimeout); jobVideoCard.style.display = 'block'; };
+                jobVideo.addEventListener('loadedmetadata', show, { once: true });
+                jobVideo.addEventListener('canplay', show, { once: true });
+                jobVideo.addEventListener('error', () => { clearTimeout(testTimeout); jobVideoCard.style.display = 'none'; }, { once: true });
+                jobVideo.load();
+            }
+        }
 
         // 检测背景图是否加载成功
         const bgImg = new Image();
