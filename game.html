@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财富流沙盘游戏 - 游戏主界面</title>
+    <link rel="stylesheet" href="game.css">
+</head>
+<body>
+    <!-- 飘浮星光粒子 -->
+    <div class="floating-stars" id="floatingStars"></div>
+    <!-- 流星 -->
+    <div class="shooting-stars">
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <div class="container">
+        <header class="page-header">
+            <h1 class="page-title">财富流沙盘 - 20 ~ 60 岁人生模拟</h1>
+        </header>
+
+        <!-- 玩家信息卡片 - 放在最上方 -->
+        <div class="card player-info" id="playerInfo">
+            <div class="info-item">
+                <span class="info-label">职业</span>
+                <span class="info-value" id="jobName">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">年龄</span>
+                <span class="info-value" id="age">20 岁</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">当前年份</span>
+                <span class="info-value" id="year">2026</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">精力值</span>
+                <span class="info-value highlight" id="energy">100</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">月工资收入</span>
+                <span class="info-value income" id="salary">¥0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">月被动收入</span>
+                <span class="info-value income" id="passiveIncome">¥0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">当前现金流</span>
+                <span class="info-value highlight" id="cashflow">¥0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">总资产</span>
+                <span class="info-value" id="totalAsset">¥0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">总负债</span>
+                <span class="info-value expense" id="totalLiability">¥0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">当前位置</span>
+                <span class="info-value" id="position">起点</span>
+            </div>
+        </div>
+
+        <!-- 圆形转盘棋盘 - 放在玩家信息下方 -->
+        <div class="board-container">
+            <div class="board-wrapper" id="boardWrapper">
+                <!-- 圆形转盘背景 -->
+                <div class="board-circle"></div>
+                <!-- 中心区域 -->
+                <div class="board-center">
+                    <div class="board-center-title">当前回合</div>
+                    <div class="board-center-round" id="boardRound">1</div>
+                    <div class="board-center-age" id="boardAgeInfo">20岁 · 起点</div>
+                </div>
+                <!-- 格子由JS动态生成 -->
+                <!-- 玩家小人 -->
+                <div class="player-pawn" id="playerPawn">
+                    <div class="player-pawn-inner">🧑‍💼</div>
+                </div>
+                <!-- 图例 -->
+                <div class="board-legend">
+                    <div class="legend-item"><span class="legend-dot start"></span>起点×1</div>
+                    <div class="legend-item"><span class="legend-dot opportunity"></span>机遇×3</div>
+                    <div class="legend-item"><span class="legend-dot adversity"></span>逆流×2</div>
+                    <div class="legend-item"><span class="legend-dot settlement"></span>结算×2</div>
+                    <div class="legend-item"><span class="legend-dot normal"></span>普通×16</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-grid">
+            <!-- 掷骰子卡片 -->
+            <div class="card">
+                <h2 class="card-title">掷骰子</h2>
+                <div class="dice-display">
+                    <div class="dice-wrapper">
+                        <div class="dice-icon" id="diceIcon">?</div>
+                    </div>
+                    <div class="dice-result">
+                        <p>掷出点数: <span id="diceResult">-</span></p>
+                        <p>触发事件: <span id="diceEvent">-</span></p>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="rollDiceBtn" onclick="doRollDice()">掷骰子</button>
+            </div>
+
+            <!-- 命运抽卡卡片 -->
+            <div class="card">
+                <h2 class="card-title">命运抽卡</h2>
+                <div class="card-buttons">
+                    <button class="btn btn-secondary" id="oppBtn" onclick="doDrawOpportunity()">抽取机遇卡</button>
+                    <button class="btn btn-secondary" id="advBtn" onclick="doDrawAdversity()">抽取逆流卡</button>
+                </div>
+                <div class="card-flip-container" id="cardFlipContainer">
+                    <div class="card-flip" id="cardFlip">
+                        <div class="card-flip-inner card-front">
+                            <p class="card-name" style="color:#aaa">等待抽卡...</p>
+                            <p class="card-desc">点击上方按钮抽取卡牌</p>
+                        </div>
+                        <div class="card-flip-inner card-back" id="cardBack">
+                            <p class="card-name" id="flipCardName">-</p>
+                            <p class="card-desc" id="flipCardDesc">-</p>
+                            <p class="card-desc" id="flipCardResult" style="margin-top:10px">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 行动操作卡片 -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2 class="card-title">行动操作</h2>
+                <div class="action-grid">
+                    <button class="action-btn" onclick="doMonthlySettlement()">月度结算</button>
+                    <button class="action-btn" onclick="doIncreaseEnergy()">增加精力</button>
+                    <button class="action-btn" onclick="showInvestModal()">投资项目</button>
+                    <button class="action-btn" onclick="showLoanModal()">银行贷款</button>
+                    <button class="action-btn" onclick="showRepayModal()">还贷款</button>
+                    <button class="action-btn" onclick="showBuyAssetModal()">购买资产</button>
+                    <button class="action-btn" onclick="showSellAssetModal()">出售资产</button>
+                    <button class="action-btn" onclick="location.href='asset.html'">查看报表</button>
+                    <button class="action-btn" onclick="showGameOver()">结束游戏</button>
+                </div>
+            </div>
+
+            <!-- 导航链接 -->
+            <div class="nav-links">
+                <a href="asset.html" class="nav-link">资产负债表</a>
+                <a href="result.html" class="nav-link">人生结局</a>
+                <a href="#" class="nav-link primary" onclick="confirmRestart()">重新开始</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用模态框 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalTitle">提示</h3>
+            <p class="modal-message" id="modalMessage"></p>
+            <div class="modal-input" id="modalInput" style="display:none;">
+                <input type="number" id="modalInputValue" placeholder="请输入金额">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-primary" id="modalConfirm">确定</button>
+                <button class="btn-secondary" onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="confirmTitle">确认</h3>
+            <p class="modal-message" id="confirmMessage"></p>
+            <div class="modal-buttons">
+                <button class="btn-danger" id="confirmOk">确定</button>
+                <button class="btn-secondary" id="confirmCancel">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 警告弹窗 -->
+    <div class="modal" id="alertModal">
+        <div class="modal-content">
+            <h3 class="modal-title">提示</h3>
+            <p class="modal-message" id="alertMessage"></p>
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="closeAlertModal()">知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果提示框 -->
+    <div class="toast" id="toast">
+        <p id="toastMessage"></p>
+    </div>
+
+    <!-- 音效控制（隐藏） -->
+    <audio id="soundDice" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleU1Maqjb3q94V1pqn9bhsmxVUGOc2N+0d1xYZZ7W4Lt4Xlplo9XjwX1jWGeh1+PHf2Zdaman2OXGfWBZZ6PY5sp7YllopdrmynlgWWmn2+fLdmJcbaXZ6Mx5YV1sqdznzHpjX2+p3enNemNhcafc6M55ZGFyqt7qz3tmY3Or3+vPemVkdq3h7NB8Z2Z3ruLt0X5oZniv4+7Tf2loc7Dp79R/aWh3sOvv1H9qaXix7O/Uf2pqerHt8NV/a2t7su7x1n9sbXyz7/LWf25vfLPv8tZ/cHF9tO/y1n9xc3207/LWf3FzfrTv8tZ/cnN+tO/y1n9zc36z7/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv8tZ/c3N+tO/y1n9zc3607/LWf3NzfrTv=" type="audio/wav">
+    </audio>
+
+    <script src="game.js"></script>
+    <script>
+        // ==================== 音效系统 ====================
+        let audioContext = null;
+
+        // 初始化音频上下文
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // 播放音效
+        function playSound(type) {
+            initAudio();
+            const ctx = audioContext;
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            switch(type) {
+                case 'click':
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.1);
+                    break;
+                    
+                case 'dice':
+                    // 骰子滚动音效 - 多频率组合
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.frequency.value = 200 + Math.random() * 300;
+                            osc.type = 'square';
+                            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                            osc.start(ctx.currentTime);
+                            osc.stop(ctx.currentTime + 0.05);
+                        }, i * 60);
+                    }
+                    return; // 单独处理
+                    
+                case 'diceEnd':
+                    // 骰子停止音效
+                    oscillator.frequency.value = 400;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.3);
+                    break;
+                    
+                case 'opportunity':
+                    // 机遇卡音效 - 上升音调
+                    oscillator.frequency.setValueAtTime(300, ctx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.3);
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.4);
+                    break;
+                    
+                case 'adversity':
+                    // 逆流卡音效 - 下降音调
+                    oscillator.frequency.setValueAtTime(600, ctx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.4);
+                    oscillator.type = 'sawtooth';
+                    gainNode.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.4);
+                    break;
+                    
+                case 'coin':
+                    // 金币音效
+                    oscillator.frequency.value = 1200;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                    oscillator.start(ctx.currentTime);
+                    setTimeout(() => {
+                        const osc2 = ctx.createOscillator();
+                        const gain2 = ctx.createGain();
+                        osc2.connect(gain2);
+                        gain2.connect(ctx.destination);
+                        osc2.frequency.value = 1500;
+                        osc2.type = 'sine';
+                        gain2.gain.setValueAtTime(0.1, ctx.currentTime);
+                        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                        osc2.start(ctx.currentTime);
+                        osc2.stop(ctx.currentTime + 0.15);
+                    }, 100);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+                    oscillator.stop(ctx.currentTime + 0.2);
+                    return;
+                    
+                case 'success':
+                    // 成功音效
+                    const notes = [523, 659, 784]; // C5, E5, G5
+                    notes.forEach((freq, i) => {
+                        setTimeout(() => {
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.frequency.value = freq;
+                            osc.type = 'sine';
+                            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+                            osc.start(ctx.currentTime);
+                            osc.stop(ctx.currentTime + 0.2);
+                        }, i * 100);
+                    });
+                    return;
+                    
+                case 'fail':
+                    // 失败音效
+                    oscillator.frequency.value = 200;
+                    oscillator.type = 'sawtooth';
+                    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    oscillator.start(ctx.currentTime);
+                    oscillator.stop(ctx.currentTime + 0.3);
+                    break;
+            }
+        }
+
+        // ==================== 棋盘系统 ====================
+        const TILE_COUNT = 24;
+        const BOARD_SIZE = 500;
+        const TILE_RADIUS = 215; // 格子距离中心的半径
+        const TILE_SIZE = 50;
+        const CENTER_OFFSET = BOARD_SIZE / 2; // 250
+
+        // 24格详细内容配置
+        const TILE_CONTENTS = [
+            { icon: '🚀', label: '起点', desc: '人生起航，每经过一次获¥1,000' },
+            { icon: '💼', label: '打工', desc: '努力工作，积累第一桶金' },
+            { icon: '💰', label: '加薪', desc: '升职加薪，收入稳步增长' },
+            { icon: '🍀', label: '机遇', desc: '商业机会降临，抽取机遇卡' },
+            { icon: '📈', label: '理财', desc: '学习投资理财知识' },
+            { icon: '🏠', label: '看房', desc: '考察房产投资机会' },
+            { icon: '⚡', label: '逆流', desc: '意外事件来袭，小心应对' },
+            { icon: '🛒', label: '消费', desc: '日常生活开支，注意节流' },
+            { icon: '🎯', label: '目标', desc: '设定财务自由目标' },
+            { icon: '💳', label: '信用', desc: '建立良好信用记录' },
+            { icon: '📊', label: '结算', desc: '月度收支结算' },
+            { icon: '💼', label: '副业', desc: '发展副业增加收入来源' },
+            { icon: '💰', label: '奖金', desc: '年终奖金发放' },
+            { icon: '🍀', label: '机遇', desc: '人脉拓展带来新机会' },
+            { icon: '🏦', label: '贷款', desc: '合理利用杠杆投资' },
+            { icon: '⚡', label: '逆流', desc: '风险来袭，谨慎行事' },
+            { icon: '🏠', label: '还贷', desc: '按时还款维护信用' },
+            { icon: '📈', label: '定投', desc: '坚持基金定投策略' },
+            { icon: '📊', label: '结算', desc: '季度财务复盘' },
+            { icon: '🎓', label: '进修', desc: '投资自己提升能力' },
+            { icon: '🤝', label: '合伙', desc: '寻找商业合作伙伴' },
+            { icon: '🍀', label: '机遇', desc: '风口来临抓住机会' },
+            { icon: '🛡️', label: '保险', desc: '配置保险抵御风险' },
+            { icon: '🎁', label: '福利', desc: '享受生活小确幸' }
+        ];
+
+        // 初始化棋盘
+        function initBoard() {
+            const wrapper = document.getElementById('boardWrapper');
+            let normalColorIdx = 0;
+
+            for (let i = 0; i < TILE_COUNT; i++) {
+                const type = BOARD_TYPES[i];
+                const content = TILE_CONTENTS[i];
+                let className;
+                
+                if (type === 'normal') {
+                    className = 'board-tile tile-normal-' + (normalColorIdx % 6);
+                    normalColorIdx++;
+                } else {
+                    className = 'board-tile tile-' + type;
+                }
+
+                // 计算格子位置（圆形排列）
+                const pos = getCircleTilePosition(i);
+                
+                const tile = document.createElement('div');
+                tile.className = className;
+                tile.id = 'tile-' + i;
+                tile.style.left = (pos.x - TILE_SIZE / 2) + 'px';
+                tile.style.top = (pos.y - TILE_SIZE / 2) + 'px';
+                tile.dataset.index = i;
+                tile.dataset.type = type;
+                
+                tile.innerHTML = 
+                    '<span class="tile-number">' + (i + 1) + '</span>' +
+                    '<span class="tile-icon">' + content.icon + '</span>' +
+                    '<span class="tile-label">' + content.label + '</span>';
+                
+                tile.addEventListener('click', () => showTileInfo(i, type));
+                
+                wrapper.appendChild(tile);
+            }
+
+            updatePlayerPosition(false);
+            adjustBoardForScreen();
+            window.addEventListener('resize', adjustBoardForScreen);
+        }
+
+        // 计算格子在圆形边缘上的位置（类似转盘）
+        function getCircleTilePosition(index) {
+            // 从顶部开始，顺时针均匀分布
+            const startAngle = -Math.PI / 2;
+            const angleStep = (2 * Math.PI) / TILE_COUNT;
+            const angle = startAngle + index * angleStep;
+            
+            return {
+                x: CENTER_OFFSET + TILE_RADIUS * Math.cos(angle),
+                y: CENTER_OFFSET + TILE_RADIUS * Math.sin(angle)
+            };
+        }
+
+        // 更新玩家位置（只负责棋子移动和格子高亮）
+        function updatePlayerPosition(animate = true) {
+            const data = getPlayerData();
+            if (!data) return;
+
+            const pos = data.position || 0;
+            const tilePos = getCircleTilePosition(pos);
+            const pawn = document.getElementById('playerPawn');
+
+            if (animate) {
+                pawn.classList.add('moving');
+                setTimeout(() => pawn.classList.remove('moving'), 450);
+            }
+
+            // 居中于格子
+            pawn.style.left = (tilePos.x - 18) + 'px';
+            pawn.style.top = (tilePos.y - 18) + 'px';
+
+            // 更新当前格子高亮
+            document.querySelectorAll('.board-tile').forEach(t => t.classList.remove('current'));
+            const currentTile = document.getElementById('tile-' + pos);
+            if (currentTile) currentTile.classList.add('current');
+        }
+
+        // 玩家逐格移动动画（掷骰子后调用）
+        async function animatePlayerMove(fromPos, steps) {
+            for (let step = 0; step < steps; step++) {
+                await new Promise(resolve => setTimeout(resolve, 350));
+                const nextPos = (fromPos + step + 1) % TILE_COUNT;
+                
+                // 更新玩家数据中的位置
+                const data = getPlayerData();
+                data.position = nextPos;
+                savePlayerData(data);
+                
+                // 移除旧的高亮
+                document.querySelectorAll('.board-tile').forEach(t => t.classList.remove('current'));
+                
+                // 设置新位置和高亮
+                updatePlayerPosition(true);
+                
+                // 每步实时刷新面板数据
+                refreshDisplay();
+                
+                // 每步播放小音效
+                playSound('click');
+            }
+        }
+
+        // 显示格子信息
+        function showTileInfo(index, type) {
+            const names = {
+                'start': '起点',
+                'opportunity': '机遇格',
+                'adversity': '逆流格',
+                'settlement': '结算日',
+                'normal': '普通格'
+            };
+            const content = TILE_CONTENTS[index];
+            showToast(`第${index + 1}格 ${content.icon} ${content.label} · ${content.desc}`);
+        }
+
+        // 响应式调整棋盘尺寸
+        function adjustBoardForScreen() {
+            const wrapper = document.getElementById('boardWrapper');
+            const w = wrapper.offsetWidth;
+            const scale = w / BOARD_SIZE;
+            const tiles = document.querySelectorAll('.board-tile');
+            
+            tiles.forEach((tile, i) => {
+                const pos = getCircleTilePosition(i);
+                const size = Math.round(TILE_SIZE * scale);
+                tile.style.width = size + 'px';
+                tile.style.height = size + 'px';
+                tile.style.left = (pos.x * scale - size / 2) + 'px';
+                tile.style.top = (pos.y * scale - size / 2) + 'px';
+            });
+
+            // 更新玩家位置
+            const data = getPlayerData();
+            if (data) {
+                const pos = getCircleTilePosition(data.position);
+                const pawnSize = Math.round(36 * scale);
+                const pawn = document.getElementById('playerPawn');
+                pawn.style.width = pawnSize + 'px';
+                pawn.style.height = pawnSize + 'px';
+                pawn.style.left = (pos.x * scale - pawnSize / 2) + 'px';
+                pawn.style.top = (pos.y * scale - pawnSize / 2) + 'px';
+            }
+        }
+
+        // ==================== 飘浮星光粒子 ====================
+        function createGameFloatingStars() {
+            const container = document.getElementById('floatingStars');
+            if (!container) return;
+            for (let i = 0; i < 25; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-particle';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = (Math.random() * 2.5 + 0.8) + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDuration = (Math.random() * 4 + 3) + 's';
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                star.style.opacity = Math.random() * 0.6 + 0.2;
+                if (Math.random() > 0.7) {
+                    star.style.background = 'rgba(240, 192, 64, 0.8)';
+                    star.style.boxShadow = '0 0 4px rgba(240, 192, 64, 0.6)';
+                }
+                container.appendChild(star);
+            }
+        }
+
+        // 页面加载时刷新数据
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建飘浮星光粒子
+            createGameFloatingStars();
+
+            // 检测背景图是否加载成功
+            const bgImg = new Image();
+            bgImg.onerror = function() { document.body.classList.add('bg-fallback'); };
+            bgImg.src = 'bg.jpg';
+            
+            const data = getPlayerData();
+            if (!data) {
+                showConfirm('请先选择职业开始游戏！', '前往选择', function() {
+                    window.location.href = 'select_job.html';
+                });
+                return;
+            }
+            
+            // 初始化棋盘
+            initBoard();
+            
+            refreshDisplay();
+            
+            // 添加所有按钮点击音效
+            document.querySelectorAll('.btn, .action-btn, .asset-btn, .nav-link').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    playSound('click');
+                });
+            });
+        });
+
+        // 刷新页面显示
+        function refreshDisplay() {
+            const data = getPlayerData();
+            if (!data) return;
+
+            document.getElementById('jobName').textContent = data.jobName;
+            document.getElementById('age').textContent = data.age + ' 岁';
+            document.getElementById('year').textContent = data.year;
+            document.getElementById('energy').textContent = data.energy;
+            
+            const salaryText = data.isUnemployed ? '¥0 (失业中)' : '¥' + data.salary.toLocaleString();
+            document.getElementById('salary').textContent = salaryText;
+            
+            document.getElementById('passiveIncome').textContent = '¥' + data.passiveIncome.toLocaleString();
+            document.getElementById('cashflow').textContent = '¥' + getMonthlyCashflow().toLocaleString();
+            document.getElementById('totalAsset').textContent = '¥' + data.totalAsset.toLocaleString();
+            document.getElementById('totalLiability').textContent = '¥' + data.totalLiability.toLocaleString();
+            
+            // 位置信息使用TILE_CONTENTS
+            const tileContent = TILE_CONTENTS[data.position];
+            document.getElementById('position').textContent = tileContent.icon + ' ' + tileContent.label + ' (第' + (data.position + 1) + '格)';
+
+            // 更新精力颜色
+            const energyEl = document.getElementById('energy');
+            if (data.energy <= 20) {
+                energyEl.style.color = '#f87171';
+            } else if (data.energy <= 50) {
+                energyEl.style.color = '#fbbf24';
+            } else {
+                energyEl.style.color = '#4ade80';
+            }
+
+            // 同步棋盘中心信息
+            document.getElementById('boardRound').textContent = data.round || 1;
+            document.getElementById('boardAgeInfo').textContent = data.age + '岁 · ' + tileContent.icon + tileContent.label;
+
+            // 检查财务自由
+            if (checkFinancialFreedom()) {
+                playSound('success');
+                showToast('恭喜！您已实现财务自由！');
+                setTimeout(() => {
+                    window.location.href = 'result.html';
+                }, 1500);
+            }
+
+            // 检查年龄
+            if (checkRetirement()) {
+                showToast('您已60岁，游戏结束！');
+                setTimeout(() => {
+                    window.location.href = 'result.html';
+                }, 1500);
+            }
+        }
+
+        // 掷骰子
+        function doRollDice() {
+            const data = getPlayerData();
+            if (!data) return;
+            if (data.energy <= 0) {
+                showToast('精力值为0，无法操作！请先增加精力。');
+                return;
+            }
+
+            const diceIcon = document.getElementById('diceIcon');
+            const rollBtn = document.getElementById('rollDiceBtn');
+            
+            const fromPos = data.position;
+            
+            // 播放骰子音效
+            playSound('dice');
+            
+            // 添加滚动动画
+            diceIcon.classList.add('dice-rolling', 'dice-glow');
+            rollBtn.disabled = true;
+            
+            // 快速切换数字
+            let rollCount = 0;
+            const rollInterval = setInterval(() => {
+                diceIcon.textContent = Math.floor(Math.random() * 6) + 1;
+                rollCount++;
+            }, 80);
+            
+            // 1秒后停止
+            setTimeout(() => {
+                clearInterval(rollInterval);
+                diceIcon.classList.remove('dice-rolling');
+                
+                const result = rollDice();
+                if (!result) {
+                    diceIcon.classList.remove('dice-glow');
+                    rollBtn.disabled = false;
+                    return;
+                }
+                
+                // 最终结果显示
+                diceIcon.textContent = result.dice;
+                playSound('diceEnd');
+                
+                // 弹跳效果
+                diceIcon.classList.add('dice-bounce', 'dice-glow');
+                setTimeout(() => {
+                    diceIcon.classList.remove('dice-bounce');
+                }, 300);
+                
+                document.getElementById('diceResult').textContent = result.dice;
+                document.getElementById('diceEvent').textContent = getBoardTypeName(result.type);
+
+                // 立即刷新面板（精力已扣除、回合数已增加）
+                refreshDisplay();
+
+                // 棋盘移动动画（逐格移动）
+                animatePlayerMove(fromPos, result.dice).then(() => {
+                    // 确保最终位置写入
+                    const finalData = getPlayerData();
+                    finalData.position = result.position;
+                    savePlayerData(finalData);
+
+                    rollBtn.disabled = false;
+
+                    // 移动完毕后触发格子事件
+                    if (result.type === 'opportunity') {
+                        playSound('opportunity');
+                        showToast('触发机遇格！可以抽取机遇卡');
+                    } else if (result.type === 'adversity') {
+                        playSound('adversity');
+                        showToast('触发逆流格！抽取逆流卡接受挑战');
+                    } else if (result.type === 'settlement') {
+                        playSound('coin');
+                        doMonthlySettlement();
+                        showToast('结算日！自动进行月度结算');
+                    } else if (result.type === 'start') {
+                        playSound('coin');
+                        addCash(1000);
+                        showToast('经过起点！获得 ¥1,000 奖励');
+                    }
+
+                    // 最终刷新
+                    refreshDisplay();
+                    updatePlayerPosition(false);
+                    
+                    // 移除光晕
+                    setTimeout(() => {
+                        diceIcon.classList.remove('dice-glow');
+                    }, 1000);
+                });
+            }, 800);
+        }
+
+        // 抽取机遇卡
+        function doDrawOpportunity() {
+            const card = drawOpportunityCard();
+            if (!card) return;
+
+            playSound('opportunity');
+            
+            // 翻转动画
+            const cardFlip = document.getElementById('cardFlip');
+            cardFlip.classList.remove('flipping');
+            
+            // 设置卡牌内容
+            const cardBack = document.getElementById('cardBack');
+            document.getElementById('flipCardName').textContent = '【机遇】' + card.title;
+            document.getElementById('flipCardName').style.color = '#4ade80';
+            document.getElementById('flipCardDesc').textContent = card.desc;
+            document.getElementById('flipCardResult').textContent = card.result;
+            document.getElementById('flipCardResult').style.color = '#4ade80';
+            
+            // 触发翻转
+            setTimeout(() => {
+                cardFlip.classList.add('flipping');
+            }, 100);
+            
+            // 添加成功特效
+            setTimeout(() => {
+                const cardDisplay = document.getElementById('cardFlipContainer');
+                cardDisplay.classList.add('success-effect');
+                playSound('coin');
+                setTimeout(() => cardDisplay.classList.remove('success-effect'), 600);
+            }, 800);
+            
+            refreshDisplay();
+        }
+
+        // 抽取逆流卡
+        function doDrawAdversity() {
+            const card = drawAdversityCard();
+            if (!card) return;
+
+            playSound('adversity');
+            
+            // 翻转动画
+            const cardFlip = document.getElementById('cardFlip');
+            cardFlip.classList.remove('flipping');
+            
+            // 设置卡牌内容
+            document.getElementById('flipCardName').textContent = '【逆流】' + card.title;
+            document.getElementById('flipCardName').style.color = '#f87171';
+            document.getElementById('flipCardDesc').textContent = card.desc;
+            document.getElementById('flipCardResult').textContent = card.result;
+            document.getElementById('flipCardResult').style.color = '#f87171';
+            
+            // 触发翻转
+            setTimeout(() => {
+                cardFlip.classList.add('flipping');
+            }, 100);
+            
+            // 添加失败特效
+            setTimeout(() => {
+                const cardDisplay = document.getElementById('cardFlipContainer');
+                cardDisplay.classList.add('fail-effect');
+                playSound('fail');
+                setTimeout(() => cardDisplay.classList.remove('fail-effect'), 600);
+            }, 800);
+            
+            refreshDisplay();
+        }
+
+        // 月度结算
+        function doMonthlySettlement() {
+            monthlySettlement();
+            const cashflow = getMonthlyCashflow();
+            playSound('coin');
+            
+            // 数值变化动画
+            const cashflowEl = document.getElementById('cashflow');
+            cashflowEl.classList.add('value-up');
+            setTimeout(() => cashflowEl.classList.remove('value-up'), 500);
+            
+            showToast('月度结算：现金流 ' + formatMoney(cashflow));
+            refreshDisplay();
+        }
+
+        // 增加精力
+        function doIncreaseEnergy() {
+            increaseEnergy();
+            playSound('success');
+            
+            // 精力值变化动画
+            const energyEl = document.getElementById('energy');
+            energyEl.classList.add('value-up');
+            setTimeout(() => energyEl.classList.remove('value-up'), 500);
+            
+            showToast('精力 +50');
+            refreshDisplay();
+        }
+
+        // 显示投资模态框
+        function showInvestModal() {
+            showModal('投资项目', '请输入投资金额（每1000元月收益5元）', true, function(amount) {
+                if (investProject(amount)) {
+                    playSound('coin');
+                    showToast('投资成功：' + formatMoney(amount));
+                }
+                refreshDisplay();
+            });
+        }
+
+        // 显示贷款模态框
+        function showLoanModal() {
+            showModal('银行贷款', '请输入贷款金额', true, function(amount) {
+                if (takeLoan(amount)) {
+                    playSound('coin');
+                    showToast('贷款成功：' + formatMoney(amount));
+                }
+                refreshDisplay();
+            });
+        }
+
+        // 显示还款模态框
+        function showRepayModal() {
+            const data = getPlayerData();
+            showModal('还贷款', `当前贷款：${formatMoney(data.loan)}`, true, function(amount) {
+                if (repayLoan(amount)) {
+                    playSound('coin');
+                    showToast('还款成功：' + formatMoney(amount));
+                }
+                refreshDisplay();
+            });
+        }
+
+        // 显示购买资产模态框
+        function showBuyAssetModal() {
+            showModal('购买资产', `
+                <div class="asset-options">
+                    <button class="asset-btn" onclick="buyAssetType('property')">房产</button>
+                    <button class="asset-btn" onclick="buyAssetType('stocks')">股票基金</button>
+                    <button class="asset-btn" onclick="buyAssetType('business')">企业</button>
+                    <button class="asset-btn" onclick="buyAssetType('sideJob')">副业</button>
+                </div>
+            `, false, null);
+        }
+
+        function buyAssetType(type) {
+            const names = { property: '房产', stocks: '股票基金', business: '企业', sideJob: '副业' };
+            closeModal();
+            showModal('购买' + names[type], '请输入购买金额', true, function(amount) {
+                if (buyAsset(type, amount)) {
+                    playSound('coin');
+                    showToast('购买成功：' + names[type] + ' ' + formatMoney(amount));
+                }
+                refreshDisplay();
+            });
+        }
+
+        // 显示出售资产模态框
+        function showSellAssetModal() {
+            const data = getPlayerData();
+            showModal('出售资产', `
+                <div class="asset-options">
+                    <button class="asset-btn" onclick="sellAssetType('property')">房产 (${formatMoney(data.assets.property)})</button>
+                    <button class="asset-btn" onclick="sellAssetType('stocks')">股票基金 (${formatMoney(data.assets.stocks)})</button>
+                    <button class="asset-btn" onclick="sellAssetType('business')">企业 (${formatMoney(data.assets.business)})</button>
+                    <button class="asset-btn" onclick="sellAssetType('sideJob')">副业 (${formatMoney(data.assets.sideJob)})</button>
+                </div>
+            `, false, null);
+        }
+
+        function sellAssetType(type) {
+            const names = { property: '房产', stocks: '股票基金', business: '企业', sideJob: '副业' };
+            closeModal();
+            showModal('出售' + names[type], '请输入出售金额', true, function(amount) {
+                if (doSellAsset(type, amount)) {
+                    playSound('coin');
+                    showToast('出售成功：' + names[type] + ' ' + formatMoney(amount));
+                }
+                refreshDisplay();
+            });
+        }
+
+        // 结束游戏
+        function showGameOver() {
+            playSound('click');
+            showConfirm('确定要结束当前游戏吗？', '结束游戏', function() {
+                window.location.href = 'result.html';
+            });
+        }
+
+        // 确认重新开始
+        function confirmRestart() {
+            playSound('click');
+            showConfirm('确定要重新开始游戏吗？当前进度将丢失。', '重新开始', function() {
+                resetGame();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // 模态框相关
+        let modalCallback = null;
+
+        function showModal(title, message, showInput, callback) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').innerHTML = message;
+            document.getElementById('modalInput').style.display = showInput ? 'block' : 'none';
+            document.getElementById('modalInputValue').value = '';
+            modalCallback = callback;
+            const modal = document.getElementById('modal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+
+            if (callback) {
+                document.getElementById('modalConfirm').onclick = function() {
+                    const value = parseInt(document.getElementById('modalInputValue').value) || 0;
+                    if (value > 0) {
+                        closeModal();
+                        callback(value);
+                    } else {
+                        showAlertModal('请输入有效金额');
+                    }
+                };
+            } else {
+                document.getElementById('modalConfirm').onclick = closeModal;
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // ===== 确认弹窗 =====
+        let confirmCallback = null;
+
+        function showConfirm(message, confirmText, callback, isDanger) {
+            document.getElementById('confirmMessage').textContent = message;
+            confirmCallback = callback;
+            const okBtn = document.getElementById('confirmOk');
+            okBtn.textContent = confirmText || '确定';
+            okBtn.className = isDanger !== false ? 'btn-danger' : 'btn-primary';
+            const modal = document.getElementById('confirmModal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+
+            okBtn.onclick = function() {
+                const cb = confirmCallback;
+                confirmCallback = null;
+                closeConfirmModal();
+                if (cb) cb();
+            };
+            document.getElementById('confirmCancel').onclick = closeConfirmModal;
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                confirmCallback = null;
+            }, 300);
+        }
+
+        // ===== 警告弹窗 =====
+        function showAlertModal(message) {
+            document.getElementById('alertMessage').textContent = message;
+            const modal = document.getElementById('alertModal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        }
+
+        function closeAlertModal() {
+            const modal = document.getElementById('alertModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // 覆盖 game.js 中的 showAlert 为自定义弹窗
+        showAlert = function(msg) { showAlertModal(msg); };
+
+        // Toast提示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.style.display = 'block';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

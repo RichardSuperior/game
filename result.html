@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人生结局 - 财富流沙盘</title>
+    <link rel="stylesheet" href="result.css">
+</head>
+<body>
+    <!-- 飘浮星光粒子 -->
+    <div class="floating-stars" id="floatingStars"></div>
+    <!-- 流星 -->
+    <div class="shooting-stars">
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <div class="container">
+        <header class="page-header">
+            <h1 class="page-title">人生结局</h1>
+        </header>
+
+        <!-- 基础信息 -->
+        <div class="card">
+            <h2 class="card-title">基础信息</h2>
+            <div class="data-row">
+                <span class="data-label">最终职业</span>
+                <span class="data-value" id="finalJob">-</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">结束年龄</span>
+                <span class="data-value" id="endAge">-</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">总经历年数</span>
+                <span class="data-value" id="totalYears">-</span>
+            </div>
+        </div>
+
+        <!-- 财富结果 -->
+        <div class="card">
+            <h2 class="card-title">财富结果</h2>
+            <div class="data-row">
+                <span class="data-label">最终现金</span>
+                <span class="data-value" id="finalCash">¥0</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">总资产</span>
+                <span class="data-value positive" id="finalAsset">¥0</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">总负债</span>
+                <span class="data-value negative" id="finalLiability">¥0</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">净资产</span>
+                <span class="data-value" id="finalNetAsset">¥0</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">最高被动收入</span>
+                <span class="data-value positive" id="maxPassiveIncome">¥0</span>
+            </div>
+        </div>
+
+        <!-- 结局判定 -->
+        <div class="card result-card" id="resultCard">
+            <div class="result-icon" id="resultIcon">🎊</div>
+            <h2 class="result-title" id="resultTitle">-</h2>
+            <p class="result-desc" id="resultDesc">-</p>
+            <div class="wealth-highlight">
+                <div class="label">最终净资产</div>
+                <div class="value" id="netAssetDisplay">¥0</div>
+            </div>
+        </div>
+
+        <!-- 复盘建议 -->
+        <div class="card advice-card">
+            <h2 class="card-title">复盘建议</h2>
+            <div id="adviceList"></div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="button-group">
+            <a href="index.html" class="btn btn-primary" onclick="resetGame()">重新开始</a>
+            <a href="asset.html" class="btn btn-secondary">查看报表</a>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script>
+        // 飘浮星光粒子
+        function createFloatingStars() {
+            const container = document.getElementById('floatingStars');
+            if (!container) return;
+            for (let i = 0; i < 25; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-particle';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = (Math.random() * 2.5 + 0.8) + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDuration = (Math.random() * 4 + 3) + 's';
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                star.style.opacity = Math.random() * 0.6 + 0.2;
+                if (Math.random() > 0.7) {
+                    star.style.background = 'rgba(240, 192, 64, 0.8)';
+                    star.style.boxShadow = '0 0 4px rgba(240, 192, 64, 0.6)';
+                }
+                container.appendChild(star);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            createFloatingStars();
+            loadResultData();
+
+            // 检测背景图是否加载成功
+            const bgImg = new Image();
+            bgImg.onerror = function() { document.body.classList.add('bg-fallback'); };
+            bgImg.src = 'bg.jpg';
+        });
+
+        function loadResultData() {
+            const data = getPlayerData();
+            if (!data) {
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#0a0e1a,#0d1528,#101d3a);color:#e8e8e8;font-family:sans-serif;text-align:center;padding:40px"><div><p style="font-size:1.2rem;margin-bottom:20px;color:rgba(255,255,255,0.6)">请先开始游戏</p><a href="index.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#c8960c,#f0c040,#ffd700);color:#0a0e1a;border-radius:30px;text-decoration:none;font-weight:600;letter-spacing:2px;box-shadow:0 4px 16px rgba(240,192,64,0.3)">返回首页</a></div></div>';
+                return;
+            }
+
+            // 基础信息
+            document.getElementById('finalJob').textContent = data.jobName;
+            document.getElementById('endAge').textContent = data.age + ' 岁';
+            document.getElementById('totalYears').textContent = (data.age - 20) + ' 年';
+
+            // 财富结果
+            document.getElementById('finalCash').textContent = formatMoney(data.cash);
+            document.getElementById('finalAsset').textContent = formatMoney(data.totalAsset);
+            document.getElementById('finalLiability').textContent = formatMoney(data.totalLiability);
+            
+            const netAsset = data.totalAsset - data.totalLiability;
+            const netAssetEl = document.getElementById('finalNetAsset');
+            netAssetEl.textContent = formatMoney(netAsset);
+            netAssetEl.className = 'data-value ' + (netAsset >= 0 ? 'positive' : 'negative');
+            
+            document.getElementById('maxPassiveIncome').textContent = formatMoney(data.maxPassiveIncome);
+            document.getElementById('netAssetDisplay').textContent = formatMoney(netAsset);
+
+            // 判断结局
+            let resultType = '';
+            let resultIcon = '';
+            let resultTitle = '';
+            let resultDesc = '';
+            let adviceList = [];
+
+            // 优先级1: 净资产为负
+            if (netAsset < 0) {
+                resultType = 'danger';
+                resultIcon = '⚠️';
+                resultTitle = '人生低谷';
+                resultDesc = '人生预警，负债大于资产，需要复盘决策，重新规划财富路线~';
+                adviceList = [
+                    '优先还清高息负债，如信用卡债务，减轻财务压力。',
+                    '增加主动收入来源，同时控制不必要支出，积累原始资本。'
+                ];
+            }
+            // 优先级2: 财富自由 (被动收入 >= 支出)
+            else if (data.passiveIncome >= data.fixedExpense) {
+                resultType = 'winner';
+                resultIcon = '🎊';
+                resultTitle = '人生赢家';
+                resultDesc = '你是人生赢家，提前实现了财富自由，可以开始退休生活了~';
+                adviceList = [
+                    '继续保持现有资产配置，让被动收入持续增长。',
+                    '可以考虑传承规划，将财富管理经验传递给下一代。'
+                ];
+            }
+            // 优先级3: 60岁退休
+            else if (data.age >= 60) {
+                resultType = 'normal';
+                resultIcon = '🌟';
+                resultTitle = '平凡人生';
+                resultDesc = '安稳的人生，60岁顺利退休，平凡而富足的一生。';
+                adviceList = [
+                    '适当增加被动收入渠道，如配置高分红股票或指数基金。',
+                    '退休后仍需关注资产保值，可适当降低风险偏好。'
+                ];
+            }
+            // 优先级4: 中途退出
+            else {
+                resultType = 'normal';
+                resultIcon = '🏠';
+                resultTitle = '平稳人生';
+                resultDesc = '虽然没有实现财务自由，但也有一定的财富积累。';
+                adviceList = [
+                    '尝试增加被动收入渠道，如房产租金、股票分红等。',
+                    '保持理性投资习惯，避免过度消费和冲动负债。'
+                ];
+            }
+
+            // 更新结局显示
+            document.getElementById('resultIcon').textContent = resultIcon;
+            const titleEl = document.getElementById('resultTitle');
+            titleEl.textContent = resultTitle;
+            titleEl.className = 'result-title ' + resultType;
+            document.getElementById('resultDesc').textContent = resultDesc;
+
+            // 更新复盘建议
+            const adviceHtml = adviceList.map(advice => 
+                `<div class="advice-item"><span class="advice-text">${advice}</span></div>`
+            ).join('');
+            document.getElementById('adviceList').innerHTML = adviceHtml;
+        }
+    </script>
+</body>
+</html>

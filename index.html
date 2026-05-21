@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>富而喜悦 - 财富流沙盘 </title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 飘浮星光粒子 -->
+    <div class="floating-stars" id="floatingStars"></div>
+    <!-- 流星 -->
+    <div class="shooting-stars">
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <div class="container">
+        <div class="logo-wrap anim-fade-up" style="animation-delay:0.05s">
+            <img src="logo.png" class="logo" alt="富而喜悦">
+            <div class="logo-glow"></div>
+        </div>
+        <h1 class="anim-fade-up" style="animation-delay:0.15s">富而喜悦 - 财富流沙盘<br><span class="title-sub">WEALTH AND JOY SIMULATION</span></h1>
+        
+        <div class="card anim-fade-up" style="animation-delay:0.4s">
+            <div class="card-glow"></div>
+            <p class="welcome-text">欢迎来到财富流沙盘！在这里，你将经历从20岁到60岁的人生财富旅程。通过投资决策、机遇把握与风险管理，在顺流与逆流中实现财务自由，掌控人生方向。</p>
+        </div>
+        
+        <div class="card game-section anim-fade-up" style="animation-delay:0.7s">
+            <div class="card-glow"></div>
+            <h2>开始游戏</h2>
+            <a href="select_job.html" class="start-btn" onclick="playClickSound()">
+                <span class="btn-text">选择职业，开启人生</span>
+                <span class="btn-shine"></span>
+            </a>
+        </div>
+        
+        <div class="card rules-section anim-fade-up" style="animation-delay:1.0s">
+            <div class="card-glow"></div>
+            <h3>游戏规则</h3>
+            <ul>
+                <li><span class="rule-icon">¤</span>模拟从20岁到60岁的人生财富成长，首先选择一个职业，开启你的人生旅程</li>
+                <li><span class="rule-icon">¤</span>通过掷骰子前进、抽取机遇卡与逆流卡、投资与交易，在人生棋盘上积累财富</li>
+                <li><span class="rule-icon">¤</span>管理你的现金流、资产与负债，目标是实现财务自由</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    // ========== 音效系统 ==========
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function ensureAudioCtx() {
+        if (!audioCtx) audioCtx = new AudioCtx();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+    }
+
+    // 通用音符播放
+    function playTone(freq, duration, type, volume, delay) {
+        try {
+            const ctx = ensureAudioCtx();
+            const t = ctx.currentTime + (delay || 0);
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(volume || 0.15, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + duration);
+        } catch(e) {}
+    }
+
+    // 页面加载音效 - 空灵和弦
+    function playLoadSound() {
+        playTone(523.25, 1.2, 'sine', 0.08, 0.1);   // C5
+        playTone(659.25, 1.4, 'sine', 0.06, 0.2);   // E5
+        playTone(783.99, 1.6, 'sine', 0.05, 0.35);  // G5
+        playTone(1046.5, 1.8, 'sine', 0.03, 0.5);   // C6
+    }
+
+    // 按钮点击音效
+    function playClickSound() {
+        playTone(880, 0.12, 'sine', 0.15, 0);
+        playTone(1320, 0.18, 'sine', 0.1, 0.06);
+        playTone(1760, 0.25, 'sine', 0.06, 0.12);
+    }
+
+    // 卡片hover音效
+    function playHoverSound() {
+        playTone(660, 0.08, 'sine', 0.05, 0);
+    }
+
+    // ========== 飘浮星光粒子 ==========
+    function createFloatingStars() {
+        const container = document.getElementById('floatingStars');
+        if (!container) return;
+        const count = 35;
+        for (let i = 0; i < count; i++) {
+            const star = document.createElement('div');
+            star.className = 'star-particle';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = (Math.random() * 2.5 + 0.8) + 'px';
+            star.style.height = star.style.width;
+            star.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            star.style.animationDelay = (Math.random() * 5) + 's';
+            star.style.opacity = Math.random() * 0.6 + 0.2;
+            if (Math.random() > 0.7) {
+                star.style.background = 'rgba(240, 192, 64, 0.8)';
+                star.style.boxShadow = '0 0 4px rgba(240, 192, 64, 0.6)';
+            }
+            container.appendChild(star);
+        }
+    }
+
+    // ========== 卡片hover音效绑定 ==========
+    function bindCardHoverSound() {
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', () => playHoverSound(), { passive: true });
+        });
+    }
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        createFloatingStars();
+        bindCardHoverSound();
+
+        // 检测背景图是否加载成功，失败则回退渐变
+        const bgImg = new Image();
+        bgImg.onload = function() {
+            // 背景图正常，加深遮罩保证文字可读
+            document.body.style.backgroundImage = "url('bg.jpg')";
+        };
+        bgImg.onerror = function() {
+            document.body.classList.add('bg-fallback');
+        };
+        bgImg.src = 'bg.jpg';
+
+        // 首次交互后播放加载音效
+        const playOnce = () => {
+            playLoadSound();
+            document.removeEventListener('click', playOnce);
+            document.removeEventListener('touchstart', playOnce);
+        };
+        document.addEventListener('click', playOnce, { once: true });
+        document.addEventListener('touchstart', playOnce, { once: true });
+    });
+    </script>
+</body>
+</html>

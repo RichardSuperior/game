@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择职业 - 财富流沙盘</title>
+    <link rel="stylesheet" href="select_job.css">
+</head>
+<body>
+    <!-- 飘浮星光粒子 -->
+    <div class="floating-stars" id="floatingStars"></div>
+    <!-- 流星 -->
+    <div class="shooting-stars">
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title anim-fade-up" style="animation-delay:0.1s">选择您的职业</h1>
+        <p class="subtitle anim-fade-up" style="animation-delay:0.25s">不同职业有不同的起始收入与支出，影响你的财富起点</p>
+
+        <div class="jobs-panel anim-fade-up" style="animation-delay:0.4s">
+            <label class="job-option" data-index="0">
+                <input type="radio" name="job" value="software_engineer" checked>
+                <div class="job-name">软件工程师</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥15,000</span>
+                    <span class="tag-expense">月支出 ¥5,000</span>
+                    <span class="tag-cashflow">现金流 ¥10,000</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="1">
+                <input type="radio" name="job" value="it_engineer">
+                <div class="job-name">IT工程师</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥13,000</span>
+                    <span class="tag-expense">月支出 ¥4,500</span>
+                    <span class="tag-cashflow">现金流 ¥8,500</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="2">
+                <input type="radio" name="job" value="product_manager">
+                <div class="job-name">产品经理</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥16,000</span>
+                    <span class="tag-expense">月支出 ¥6,000</span>
+                    <span class="tag-cashflow">现金流 ¥10,000</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="3">
+                <input type="radio" name="job" value="doctor">
+                <div class="job-name">医生</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥20,000</span>
+                    <span class="tag-expense">月支出 ¥8,000</span>
+                    <span class="tag-cashflow">现金流 ¥12,000</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="4">
+                <input type="radio" name="job" value="lawyer">
+                <div class="job-name">律师</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥18,000</span>
+                    <span class="tag-expense">月支出 ¥7,000</span>
+                    <span class="tag-cashflow">现金流 ¥11,000</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="5">
+                <input type="radio" name="job" value="teacher">
+                <div class="job-name">教师</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥8,000</span>
+                    <span class="tag-expense">月支出 ¥3,000</span>
+                    <span class="tag-cashflow">现金流 ¥5,000</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="6">
+                <input type="radio" name="job" value="middle_school_teacher">
+                <div class="job-name">中学教师</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥7,500</span>
+                    <span class="tag-expense">月支出 ¥2,800</span>
+                    <span class="tag-cashflow">现金流 ¥4,700</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="7">
+                <input type="radio" name="job" value="consultant">
+                <div class="job-name">咨询师</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥14,000</span>
+                    <span class="tag-expense">月支出 ¥5,500</span>
+                    <span class="tag-cashflow">现金流 ¥8,500</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="8">
+                <input type="radio" name="job" value="sales_manager">
+                <div class="job-name">销售经理</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥12,000</span>
+                    <span class="tag-expense">月支出 ¥5,000</span>
+                    <span class="tag-cashflow">现金流 ¥7,000</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="9">
+                <input type="radio" name="job" value="hr">
+                <div class="job-name">HR</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥10,000</span>
+                    <span class="tag-expense">月支出 ¥4,000</span>
+                    <span class="tag-cashflow">现金流 ¥6,000</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="10">
+                <input type="radio" name="job" value="customer_service">
+                <div class="job-name">客服</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥6,000</span>
+                    <span class="tag-expense">月支出 ¥2,500</span>
+                    <span class="tag-cashflow">现金流 ¥3,500</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="11">
+                <input type="radio" name="job" value="finance">
+                <div class="job-name">财务</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥11,000</span>
+                    <span class="tag-expense">月支出 ¥4,200</span>
+                    <span class="tag-cashflow">现金流 ¥6,800</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="12">
+                <input type="radio" name="job" value="admin_secretary">
+                <div class="job-name">行政秘书</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥7,000</span>
+                    <span class="tag-expense">月支出 ¥2,800</span>
+                    <span class="tag-cashflow">现金流 ¥4,200</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="13">
+                <input type="radio" name="job" value="nurse">
+                <div class="job-name">护士</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥9,000</span>
+                    <span class="tag-expense">月支出 ¥3,500</span>
+                    <span class="tag-cashflow">现金流 ¥5,500</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="14">
+                <input type="radio" name="job" value="artist">
+                <div class="job-name">艺术家</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥5,000</span>
+                    <span class="tag-expense">月支出 ¥2,000</span>
+                    <span class="tag-cashflow">现金流 ¥3,000</span>
+                </div>
+            </label>
+
+            <label class="job-option" data-index="15">
+                <input type="radio" name="job" value="entrepreneur">
+                <div class="job-name">创业者</div>
+                <div class="job-details">
+                    <span class="tag-income">月入 ¥10,000</span>
+                    <span class="tag-expense">月支出 ¥6,000</span>
+                    <span class="tag-cashflow">现金流 ¥4,000</span>
+                </div>
+            </label>
+        </div>
+
+        <div class="button-group anim-fade-up" style="animation-delay:0.6s">
+            <button class="start-game-btn" onclick="confirmStart()">
+                <span class="btn-text">确认开始游戏</span>
+                <span class="btn-shine"></span>
+            </button>
+            <a href="index.html" class="back-link" onclick="playBackSound()">返回主页</a>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script>
+    // ========== 音效系统 ==========
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function ensureAudioCtx() {
+        if (!audioCtx) audioCtx = new AudioCtx();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+    }
+
+    function playTone(freq, duration, type, volume, delay) {
+        try {
+            const ctx = ensureAudioCtx();
+            const t = ctx.currentTime + (delay || 0);
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(volume || 0.15, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + duration);
+        } catch(e) {}
+    }
+
+    // 页面加载音效
+    function playLoadSound() {
+        playTone(523.25, 1.0, 'sine', 0.07, 0.1);
+        playTone(659.25, 1.2, 'sine', 0.05, 0.2);
+        playTone(783.99, 1.4, 'sine', 0.04, 0.35);
+    }
+
+    // 职业选择音效
+    function playSelectSound() {
+        playTone(880, 0.1, 'sine', 0.12, 0);
+        playTone(1100, 0.15, 'sine', 0.08, 0.05);
+    }
+
+    // 确认开始音效 - 上行琶音
+    function playConfirmSound() {
+        playTone(523.25, 0.15, 'sine', 0.12, 0);
+        playTone(659.25, 0.15, 'sine', 0.10, 0.08);
+        playTone(783.99, 0.15, 'sine', 0.10, 0.16);
+        playTone(1046.5, 0.3, 'sine', 0.12, 0.24);
+    }
+
+    // 返回音效
+    function playBackSound() {
+        playTone(660, 0.1, 'sine', 0.1, 0);
+        playTone(440, 0.15, 'sine', 0.08, 0.06);
+    }
+
+    // hover音效
+    function playHoverSound() {
+        playTone(700, 0.06, 'sine', 0.04, 0);
+    }
+
+    // ========== 飘浮星光粒子 ==========
+    function createFloatingStars() {
+        const container = document.getElementById('floatingStars');
+        if (!container) return;
+        for (let i = 0; i < 30; i++) {
+            const star = document.createElement('div');
+            star.className = 'star-particle';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = (Math.random() * 2.5 + 0.8) + 'px';
+            star.style.height = star.style.width;
+            star.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            star.style.animationDelay = (Math.random() * 5) + 's';
+            star.style.opacity = Math.random() * 0.6 + 0.2;
+            if (Math.random() > 0.7) {
+                star.style.background = 'rgba(240, 192, 64, 0.8)';
+                star.style.boxShadow = '0 0 4px rgba(240, 192, 64, 0.6)';
+            }
+            container.appendChild(star);
+        }
+    }
+
+    // ========== 职业选择交互 ==========
+    function bindJobEvents() {
+        document.querySelectorAll('.job-option').forEach(opt => {
+            const radio = opt.querySelector('input[type="radio"]');
+            opt.addEventListener('mouseenter', () => playHoverSound(), { passive: true });
+            radio.addEventListener('change', () => {
+                playSelectSound();
+                // 选中动画脉冲
+                opt.classList.add('pulse-once');
+                setTimeout(() => opt.classList.remove('pulse-once'), 500);
+            });
+        });
+    }
+
+    // ========== 确认开始 ==========
+    function confirmStart() {
+        playConfirmSound();
+        // 按钮按下动画
+        const btn = document.querySelector('.start-game-btn');
+        btn.classList.add('btn-press');
+        setTimeout(() => {
+            const selectedJob = document.querySelector('input[name="job"]:checked').value;
+            initPlayerData(selectedJob);
+            window.location.href = 'game.html';
+        }, 400);
+    }
+
+    // ========== 初始化 ==========
+    document.addEventListener('DOMContentLoaded', () => {
+        createFloatingStars();
+        bindJobEvents();
+
+        // 检测背景图是否加载成功
+        const bgImg = new Image();
+        bgImg.onerror = function() { document.body.classList.add('bg-fallback'); };
+        bgImg.src = 'bg.jpg';
+        // 职业卡片交错入场
+        document.querySelectorAll('.job-option').forEach((opt, i) => {
+            opt.style.opacity = '0';
+            opt.style.transform = 'translateX(-20px)';
+            opt.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            setTimeout(() => {
+                opt.style.opacity = '1';
+                opt.style.transform = 'translateX(0)';
+            }, 500 + i * 60);
+        });
+        // 首次交互后播放加载音效
+        const playOnce = () => {
+            playLoadSound();
+            document.removeEventListener('click', playOnce);
+            document.removeEventListener('touchstart', playOnce);
+        };
+        document.addEventListener('click', playOnce, { once: true });
+        document.addEventListener('touchstart', playOnce, { once: true });
+    });
+    </script>
+</body>
+</html>

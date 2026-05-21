@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资产负债表 - 财富流沙盘</title>
+    <link rel="stylesheet" href="asset.css">
+</head>
+<body>
+    <!-- 飘浮星光粒子 -->
+    <div class="floating-stars" id="floatingStars"></div>
+    <!-- 流星 -->
+    <div class="shooting-stars">
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <div class="container">
+        <header class="page-header">
+            <h1 class="page-title">个人资产负债表</h1>
+        </header>
+
+        <!-- 收入板块 -->
+        <div class="card income-section">
+            <h2 class="card-title">收入板块</h2>
+            <div class="data-row">
+                <span class="data-label">主动收入（工资）</span>
+                <span class="data-value" id="salaryIncome">¥0</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">被动收入（租金/分红）</span>
+                <span class="data-value" id="passiveIncomeDisplay">¥0</span>
+            </div>
+            <div class="data-total">
+                <span class="data-label">总收入</span>
+                <span class="data-value" id="totalIncome">¥0</span>
+            </div>
+        </div>
+
+        <!-- 支出板块 -->
+        <div class="card expense-section">
+            <h2 class="card-title">支出板块</h2>
+            <div class="data-row">
+                <span class="data-label">日常固定支出</span>
+                <span class="data-value" id="fixedExpense">¥0</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">贷款月供</span>
+                <span class="data-value" id="loanPayment">¥0</span>
+            </div>
+            <div class="data-total">
+                <span class="data-label">总支出</span>
+                <span class="data-value" id="totalExpense">¥0</span>
+            </div>
+        </div>
+
+        <!-- 资产与负债两列 -->
+        <div class="two-column">
+            <!-- 资产板块 -->
+            <div class="card asset-section">
+                <h2 class="card-title">资产板块</h2>
+                <div class="data-row">
+                    <span class="data-label">现金</span>
+                    <span class="data-value" id="cashAsset">¥0</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">房产</span>
+                    <span class="data-value" id="propertyAsset">¥0</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">股票基金</span>
+                    <span class="data-value" id="stocksAsset">¥0</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">企业</span>
+                    <span class="data-value" id="businessAsset">¥0</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">副业</span>
+                    <span class="data-value" id="sideJobAsset">¥0</span>
+                </div>
+                <div class="data-total">
+                    <span class="data-label">总资产</span>
+                    <span class="data-value" id="totalAsset">¥0</span>
+                </div>
+            </div>
+
+            <!-- 负债板块 -->
+            <div class="card liability-section">
+                <h2 class="card-title">负债板块</h2>
+                <div class="data-row">
+                    <span class="data-label">银行贷款</span>
+                    <span class="data-value" id="bankLoan">¥0</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">信用卡负债</span>
+                    <span class="data-value" id="creditCard">¥0</span>
+                </div>
+                <div class="data-total">
+                    <span class="data-label">总负债</span>
+                    <span class="data-value" id="totalLiability">¥0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关键数据 -->
+        <div class="card">
+            <h2 class="card-title">关键数据</h2>
+            <div class="key-metrics">
+                <div class="metric-card">
+                    <div class="metric-label">月现金流</div>
+                    <div class="metric-value" id="monthlyCashflow">¥0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">净资产</div>
+                    <div class="metric-value" id="netAsset">¥0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">财务自由</div>
+                    <div class="metric-status" id="freedomStatus">否</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="game.html" class="back-link">返回游戏</a>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script>
+        // 飘浮星光粒子
+        function createFloatingStars() {
+            const container = document.getElementById('floatingStars');
+            if (!container) return;
+            for (let i = 0; i < 25; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-particle';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = (Math.random() * 2.5 + 0.8) + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDuration = (Math.random() * 4 + 3) + 's';
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                star.style.opacity = Math.random() * 0.6 + 0.2;
+                if (Math.random() > 0.7) {
+                    star.style.background = 'rgba(240, 192, 64, 0.8)';
+                    star.style.boxShadow = '0 0 4px rgba(240, 192, 64, 0.6)';
+                }
+                container.appendChild(star);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            createFloatingStars();
+            loadBalanceData();
+
+            // 检测背景图是否加载成功
+            const bgImg = new Image();
+            bgImg.onerror = function() { document.body.classList.add('bg-fallback'); };
+            bgImg.src = 'bg.jpg';
+        });
+
+        function loadBalanceData() {
+            const data = getPlayerData();
+            if (!data) {
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(160deg,#0a0e1a,#0d1528,#101d3a);color:#e8e8e8;font-family:sans-serif;text-align:center;padding:40px"><div><p style="font-size:1.2rem;margin-bottom:20px;color:rgba(255,255,255,0.6)">请先开始游戏</p><a href="index.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#c8960c,#f0c040,#ffd700);color:#0a0e1a;border-radius:30px;text-decoration:none;font-weight:600;letter-spacing:2px;box-shadow:0 4px 16px rgba(240,192,64,0.3)">返回首页</a></div></div>';
+                return;
+            }
+
+            // 收入
+            const salaryDisplay = data.isUnemployed ? 0 : data.salary;
+            document.getElementById('salaryIncome').textContent = formatMoney(salaryDisplay);
+            document.getElementById('passiveIncomeDisplay').textContent = formatMoney(data.passiveIncome);
+            document.getElementById('totalIncome').textContent = formatMoney(salaryDisplay + data.passiveIncome);
+
+            // 支出
+            document.getElementById('fixedExpense').textContent = formatMoney(data.fixedExpense);
+            const loanPayment = Math.floor(data.loan * 0.05); // 假设月利率5%
+            document.getElementById('loanPayment').textContent = formatMoney(loanPayment);
+            document.getElementById('totalExpense').textContent = formatMoney(data.fixedExpense + loanPayment);
+
+            // 资产
+            document.getElementById('cashAsset').textContent = formatMoney(data.assets.cash);
+            document.getElementById('propertyAsset').textContent = formatMoney(data.assets.property);
+            document.getElementById('stocksAsset').textContent = formatMoney(data.assets.stocks);
+            document.getElementById('businessAsset').textContent = formatMoney(data.assets.business);
+            document.getElementById('sideJobAsset').textContent = formatMoney(data.assets.sideJob);
+            document.getElementById('totalAsset').textContent = formatMoney(data.totalAsset);
+
+            // 负债
+            document.getElementById('bankLoan').textContent = formatMoney(data.loan);
+            document.getElementById('creditCard').textContent = formatMoney(data.totalLiability - data.loan);
+            document.getElementById('totalLiability').textContent = formatMoney(data.totalLiability);
+
+            // 关键数据
+            const monthlyCashflow = salaryDisplay + data.passiveIncome - data.fixedExpense - loanPayment;
+            const cashflowEl = document.getElementById('monthlyCashflow');
+            cashflowEl.textContent = formatMoney(monthlyCashflow);
+            cashflowEl.className = 'metric-value ' + (monthlyCashflow >= 0 ? 'positive' : 'negative');
+
+            const netAsset = data.totalAsset - data.totalLiability;
+            const netAssetEl = document.getElementById('netAsset');
+            netAssetEl.textContent = formatMoney(netAsset);
+            netAssetEl.className = 'metric-value ' + (netAsset >= 0 ? 'positive' : 'negative');
+
+            const isFreedom = data.passiveIncome >= data.fixedExpense;
+            const freedomEl = document.getElementById('freedomStatus');
+            freedomEl.textContent = isFreedom ? '是' : '否';
+            freedomEl.className = 'metric-status ' + (isFreedom ? 'yes' : 'no');
+        }
+    </script>
+</body>
+</html>
